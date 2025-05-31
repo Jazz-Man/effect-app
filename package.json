@@ -1,42 +1,26 @@
 {
-  "name": "effect-app",
-  "version": "1.0.0",
-  "description": "Effect-TS Worker Pool Demo with Bun",
-  "type": "module",
-  "main": "src/main.ts",
-  "scripts": {
-    "dev": "bun run src/main.ts",
-    "start": "bun run src/main.ts",
-    "typecheck": "tsc --noEmit",
-    "example": "bun run src/simple-example.ts",
-    "monitor": "bun run src/worker-monitor.ts",
-    "test": "./test-demo.sh"
-  },
-  "keywords": [
-    "effect",
-    "worker",
-    "bun"
-  ],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.11.0",
-  "dependencies": {
-    "@effect/experimental": "^0.48.2",
-    "@effect/opentelemetry": "^0.50.2",
-    "@effect/platform": "^0.84.3",
-    "@effect/platform-bun": "^0.67.3",
-    "@effect/platform-node": "^0.83.2",
-    "@effect/schema": "^0.75.5",
-    "@effect/sql": "^0.37.2",
-    "@effect/sql-sqlite-bun": "^0.38.2",
-    "@opentelemetry/sdk-logs": "^0.201.1",
-    "@opentelemetry/sdk-metrics": "^2.0.1",
-    "@opentelemetry/sdk-trace-base": "^2.0.1",
-    "@opentelemetry/sdk-trace-node": "^2.0.1",
-    "effect": "^3.16.0"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.2.15",
-    "typescript": "^5.8.3"
-  }
+	"name": "effect-app",
+	"version": "1.0.0",
+	"description": "Effect-TS Worker Pool Demo with Bun",
+	"type": "module",
+	"scripts": {
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": ["effect", "worker", "bun"],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.11.0",
+	"dependencies": {
+		"@effect/platform": "^0.84.3",
+		"@effect/platform-bun": "^0.67.3",
+		"@effect/schema": "^0.75.5",
+		"@effect/sql": "^0.37.2",
+		"@effect/sql-sqlite-bun": "^0.38.2",
+		"effect": "^3.16.0",
+		"typescript": "^5.8.3"
+	},
+	"devDependencies": {
+		"@tsconfig/bun": "^1.0.8",
+		"@types/bun": "^1.2.15"
+	}
 }
