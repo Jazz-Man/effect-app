@@ -1,26 +1,18 @@
 {
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"display": "app base tsconfig",
+	"extends": "@tsconfig/bun",
 	"compilerOptions": {
-		"target": "ESNext",
-		"module": "ESNext",
-		"lib": ["ESNext"],
 		"preserveSymlinks": true,
-		"moduleResolution": "bundler",
-		"moduleDetection": "force",
-		"allowImportingTsExtensions": true,
-		"strict": true,
+
 		"downlevelIteration": true,
-		"skipLibCheck": true,
-		"jsx": "react-jsx",
-		"allowSyntheticDefaultImports": true,
 		"forceConsistentCasingInFileNames": true,
-		"allowJs": true,
-		"noEmit": true,
+
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"strictNullChecks": true,
-		"exactOptionalPropertyTypes": true,
-		"noUncheckedIndexedAccess": true
+		"exactOptionalPropertyTypes": true
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules"]
