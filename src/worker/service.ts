@@ -1,42 +1,67 @@
-import {
-  FetchHttpClient,
-  HttpClient,
-  HttpClientRequest,
-  HttpClientResponse,
-} from "@effect/platform";
-import { Console, Effect, Layer, Schema } from "effect";
+import { HttpClient } from "@effect/platform";
+import { Console, Context, Data, Effect, Schema } from "effect";
+import { BunFetchLive } from "../implementations";
+import type { ServiceName, ServiceUrl } from "./ipServices";
+import { IPInfoResponse } from "./schema";
 
-const Post = Schema.Struct({
-  id: Schema.Number,
-  title: Schema.String,
-});
+import type { Lookup } from "geoip-lite";
 
-const CustomFetchLive = FetchHttpClient.layer.pipe(
-  Layer.provide(
-    Layer.succeed(FetchHttpClient.RequestInit, {
-      verbose: true,
-      tls: {
-        rejectUnauthorized: false,
-      },
-    } as BunFetchRequestInit),
-  ),
-);
+export type TGeoIPParam = string | number;
+
+export class GeoIpNotFoundError extends Data.TaggedError("GeoIpNotFoundError")<{
+  ip: TGeoIPParam;
+}> {}
+
+export class GeoIpService extends Context.Tag("GeoIpService")<
+  GeoIpService,
+  {
+    lookup: (
+      ip: TGeoIPParam,
+    ) => Effect.Effect<null | Lookup, GeoIpNotFoundError, never>;
+  }
+>() {}
+
+export class ProxyService extends Context.Tag("ProxyService")<
+  ProxyService,
+  {
+    getProxyUrl: (user?: string) => Effect.Effect<string>;
+    getRandomUsername: () => Effect.Effect<string>;
+  }
+>() {}
+
+export class ServiceRegistry extends Context.Tag("ServiceRegistry")<
+  ServiceRegistry,
+  {
+    getRandomizedServices: () => Effect.Effect<ServiceName[]>;
+    getServiceUrl: (name: ServiceName) => Effect.Effect<ServiceUrl>;
+  }
+>() {}
+
+export class HttpClientNew extends Context.Tag("HttpClientNew")<
+  HttpClientNew,
+  { fetch: (url: string) => Effect.Effect<unknown, Error> }
+>() {}
 
 const program = Effect.gen(function* () {
   const client = (yield* HttpClient.HttpClient).pipe(
-    HttpClient.tapRequest(Console.log),
     HttpClient.filterStatusOk,
-    HttpClient.mapRequest(
-      HttpClientRequest.prependUrl("https://jsonplaceholder.typicode.com"),
-    ),
+    HttpClient.followRedirects,
   );
 
-  const response = yield* client.get("/posts/1");
+  const response = yield* client
+    .get("https://ifconfig.pro/ip.host")
+    .pipe(
+      Effect.withSpan("fetch_ip", { attributes: { service: "ifconfig.pro" } }),
+    );
 
-  return yield* HttpClientResponse.schemaBodyJson(Post)(response);
-  // const json = yield* response.json;
-  // console.log(json);
-}).pipe(Effect.provide(CustomFetchLive));
+  const isJson =
+    response.headers["content-type"]?.includes("application/json") ?? false;
 
-// program.pipe(Effect.andThen(Console.log));
+  const body = yield* isJson ? response.json : response.text;
+
+  return yield* Schema.decodeUnknown(IPInfoResponse)(
+    isJson ? body : { raw: String(body).trim() },
+  );
+}).pipe(Effect.provide(BunFetchLive));
+
 Effect.runPromise(program.pipe(Effect.andThen(Console.log)));
