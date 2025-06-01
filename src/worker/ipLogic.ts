@@ -1,25 +1,21 @@
-import { Effect } from "effect";
-import type { GeoIPInfo } from "./schema";
+import { Effect, Schema } from "effect";
+import { IPInfoResponse } from "./schema";
 
 import { HttpClient } from "@effect/platform";
 import type { ServiceName } from "./ipServices";
-import { GeoIpService, ProxyService, ServiceRegistry } from "./service";
+import { GeoIpService, ServiceRegistry } from "./service";
 
 const fetchIPInfo = (serviceName: ServiceName) =>
-  Effect.gen(function* (_) {
-    const proxyService = yield* ProxyService;
-
-    const serviceRegistry = yield* ServiceRegistry;
-    const geoIp = yield* GeoIpService;
-
-    const proxyUser = yield* proxyService.getRandomUsername();
-    const proxy = yield* proxyService.getProxyUrl(proxyUser);
-    const serviceNameUrl = yield* serviceRegistry.getServiceUrl(serviceName);
-
+  Effect.gen(function* () {
     const client = (yield* HttpClient.HttpClient).pipe(
       HttpClient.filterStatusOk,
       HttpClient.followRedirects,
     );
+
+    const serviceRegistry = yield* ServiceRegistry;
+    const geoIp = yield* GeoIpService;
+
+    const serviceNameUrl = yield* serviceRegistry.getServiceUrl(serviceName);
 
     const response = yield* client
       .get(serviceNameUrl)
@@ -32,59 +28,21 @@ const fetchIPInfo = (serviceName: ServiceName) =>
 
     const body = yield* isJson ? response.json : response.text;
 
-    // Обробка відповіді
-    const data = yield* Effect.tryPromise(() =>
-      response instanceof Response &&
-      response.headers.get("content-type")?.includes("application/json")
-        ? response.json()
-        : response.text(),
+    const result = yield* Schema.decodeUnknown(IPInfoResponse)(
+      isJson ? body : { raw: String(body).trim() },
     );
 
-    // Парсинг IP
-    const ipInfo = yield* parseIPResponse(serviceName, data).pipe(
-      Effect.map((info) => ({
-        ...info,
-        serviceName,
-        serviceNameUrl,
-        proxy,
-        proxyUser,
-      })),
-    );
+    const ip = Object.values(result).at(0) as string;
 
-    // Геолокація
     const geoData = yield* geoIp
-      .lookup(ipInfo.ip)
+      .lookup(ip)
       .pipe(
         Effect.mapError(
           () => new Error(`Failed to fetch IP for "${serviceName}"`),
         ),
       );
 
-    return { ...ipInfo, ...geoData } as GeoIPInfo;
-  }).pipe(
-    Effect.retry({ times: 3, delay: "5 seconds" }),
-    Effect.catchAll((error) =>
-      Effect.fail(new Error(`IP lookup failed: ${error.message}`)),
-    ),
-  );
-
-const parseIPResponse = (serviceName: ServiceName, data: unknown) =>
-  Effect.succeed(() => {
-    switch (serviceName) {
-      case "httpbin.org":
-        return { ip: (data as any).origin };
-      case "check.torproject.org":
-        return { ip: (data as any).IP };
-      case "api.my-ip.io/v2/ip.json":
-        return { ip: (data as any).ip };
-      case "ifconfig.pro":
-        return { ip: (data as string).split(" - ")[0] };
-      case "wtfismyip.com":
-      case "myip.wtf":
-        return { ip: (data as any).YourFuckingIPAddress };
-      default:
-        return { ip: String(data) };
-    }
+    return geoData;
   });
 
 export const getPublicIP = Effect.gen(function* (_) {

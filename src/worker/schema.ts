@@ -49,7 +49,7 @@ export type GeoIPInfo = Schema.Schema.Type<typeof GeoIPInfo>;
 
 const isValidIP = (s: string): boolean => isIPv4(s) || isIPv6(s);
 
-const IPField = Schema.String.pipe(
+export const IPField = Schema.String.pipe(
   Schema.filter(isValidIP, { message: () => "Invalid IPv4 or IPv6 address" }),
 );
 

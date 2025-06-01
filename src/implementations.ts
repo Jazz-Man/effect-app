@@ -3,11 +3,10 @@ import { Effect, Layer } from "effect";
 import geoIp from "geoip-lite";
 
 import ipServices, { getRandomizedServices } from "./worker/ipServices";
-import { getProxyUrl, getRandomUsername } from "./worker/proxy";
+import { getProxyUrl } from "./worker/proxy";
 import {
   GeoIpNotFoundError,
   GeoIpService,
-  ProxyService,
   ServiceRegistry,
 } from "./worker/service";
 
@@ -26,12 +25,7 @@ export const BunFetchLive = FetchHttpClient.layer.pipe(
   ),
 );
 
-const ProxyServiceLive = Layer.succeed(ProxyService, {
-  getProxyUrl: (user) => Effect.succeed(getProxyUrl(user)),
-  getRandomUsername: () => Effect.succeed(getRandomUsername()),
-});
-
-const ServiceRegistryLive = Layer.succeed(ServiceRegistry, {
+export const ServiceRegistryLive = Layer.succeed(ServiceRegistry, {
   getRandomizedServices: () => Effect.succeed(getRandomizedServices()),
   getServiceUrl: (name) =>
     Effect.succeed(ipServices[name as keyof typeof ipServices]),
@@ -40,14 +34,21 @@ const ServiceRegistryLive = Layer.succeed(ServiceRegistry, {
 export const GeoIpServiceLive = Layer.succeed(GeoIpService, {
   lookup: (ip) =>
     Effect.try({
-      try: () => geoIp.lookup(ip),
-      catch: () => new GeoIpNotFoundError(ip),
+      try: () => {
+        const res = geoIp.lookup(ip);
+
+        if (res === null) {
+          throw new GeoIpNotFoundError();
+        }
+
+        return res;
+      },
+      catch: () => new GeoIpNotFoundError(),
     }),
 });
 
 export const AppServices = Layer.mergeAll(
   BunFetchLive,
   GeoIpServiceLive,
-  ProxyServiceLive,
   ServiceRegistryLive,
 );
