@@ -37,11 +37,6 @@ export class ServiceRegistry extends Context.Tag("ServiceRegistry")<
   }
 >() {}
 
-export class HttpClientNew extends Context.Tag("HttpClientNew")<
-  HttpClientNew,
-  { fetch: (url: string) => Effect.Effect<unknown, Error> }
->() {}
-
 const program = Effect.gen(function* () {
   const client = (yield* HttpClient.HttpClient).pipe(
     HttpClient.filterStatusOk,

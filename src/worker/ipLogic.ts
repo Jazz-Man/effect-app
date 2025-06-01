@@ -5,7 +5,6 @@ import { HttpClient } from "@effect/platform";
 import type { ServiceName } from "./ipServices";
 import { GeoIpService, ProxyService, ServiceRegistry } from "./service";
 
-// Отримання інформації про IP
 const fetchIPInfo = (serviceName: ServiceName) =>
   Effect.gen(function* (_) {
     const proxyService = yield* ProxyService;
@@ -22,7 +21,6 @@ const fetchIPInfo = (serviceName: ServiceName) =>
       HttpClient.followRedirects,
     );
 
-    // Виконання запиту
     const response = yield* client
       .get(serviceNameUrl)
       .pipe(
