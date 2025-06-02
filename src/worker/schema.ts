@@ -2,51 +2,6 @@ import { ParseResult, Schema } from "effect";
 
 import { isIPv4, isIPv6 } from "node:net";
 
-export const BaseIPResponse = Schema.Struct({
-  ip: Schema.String,
-  serviceName: Schema.optional(Schema.String),
-  serviceNameUrl: Schema.optional(Schema.String),
-  proxy: Schema.optional(Schema.String),
-  proxyUser: Schema.optional(Schema.String),
-});
-
-export const ServiceSchemas = {
-  "wtfismyip.com": Schema.Struct({ YourFuckingIPAddress: Schema.String }),
-  "myip.wtf": Schema.Struct({ YourFuckingIPAddress: Schema.String }),
-  "api.my-ip.io/v2/ip.json": Schema.Struct({ ip: Schema.String }),
-  "check.torproject.org": Schema.Struct({ IP: Schema.String }),
-  "httpbin.org": Schema.Struct({ origin: Schema.String }),
-  "ifconfig.pro": Schema.Struct({ ip: Schema.String }),
-} as const;
-
-export type ServiceSchemas = typeof ServiceSchemas;
-
-export const IPInfo = Schema.Struct({
-  ip: Schema.String,
-  serviceName: Schema.optional(Schema.String),
-  serviceNameUrl: Schema.optional(Schema.String),
-  proxy: Schema.optional(Schema.String),
-  proxyUser: Schema.optional(Schema.String),
-  rawResponse: Schema.optional(Schema.Union(Schema.String, Schema.Unknown)),
-});
-
-export type IPInfo = Schema.Schema.Type<typeof IPInfo>;
-
-export const GeoIPInfo = Schema.Struct({
-  ...IPInfo.fields,
-  range: Schema.optional(Schema.Array(Schema.Number)),
-  country: Schema.optional(Schema.String),
-  region: Schema.optional(Schema.String),
-  city: Schema.optional(Schema.String),
-  lat: Schema.optional(Schema.Number),
-  lon: Schema.optional(Schema.Number),
-  timezone: Schema.optional(Schema.String),
-  offset: Schema.optional(Schema.Number),
-  currency: Schema.optional(Schema.String),
-});
-
-export type GeoIPInfo = Schema.Schema.Type<typeof GeoIPInfo>;
-
 const isValidIP = (s: string): boolean => isIPv4(s) || isIPv6(s);
 
 export const IPField = Schema.String.pipe(
