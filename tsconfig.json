@@ -12,7 +12,16 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "strictNullChecks": true,
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "diagnostics": true, // controls Effect diagnostics (default: true)
+        "quickinfo": true, // controls quickinfo over Effect (default: true)
+        "completions": true, // controls Effect completions (default: true)
+        "multipleEffectCheck": true // controls if multiple versions of Effect are referenced (default: true)
+      }
+    ]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
