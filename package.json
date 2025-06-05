@@ -11,18 +11,19 @@
   "license": "ISC",
   "packageManager": "pnpm@10.11.0",
   "dependencies": {
-    "@effect/platform": "^0.84.3",
-    "@effect/platform-bun": "^0.67.3",
+    "@effect/platform": "^0.84.6",
+    "@effect/platform-bun": "^0.69.2",
     "@effect/schema": "^0.75.5",
-    "@effect/sql": "^0.37.2",
-    "@effect/sql-sqlite-bun": "^0.38.2",
-    "effect": "^3.16.0",
-    "geoip-lite": "^1.4.10",
-    "typescript": "^5.8.3"
+    "@effect/sql": "^0.37.6",
+    "@effect/sql-sqlite-bun": "^0.38.6",
+    "effect": "^3.16.3",
+    "geoip-lite": "^1.4.10"
   },
   "devDependencies": {
+    "@effect/language-service": "^0.18.0",
     "@tsconfig/bun": "^1.0.8",
     "@types/bun": "^1.2.15",
-    "@types/geoip-lite": "^1.4.4"
+    "@types/geoip-lite": "^1.4.4",
+    "typescript": "^5.8.3"
   }
 }
