@@ -4,7 +4,7 @@ import { isIPv4, isIPv6 } from "node:net";
 
 const isValidIP = (s: string): boolean => isIPv4(s) || isIPv6(s);
 
-export const IPField = Schema.String.pipe(
+const IPField = Schema.String.pipe(
   Schema.filter(isValidIP, { message: () => "Invalid IPv4 or IPv6 address" }),
 );
 

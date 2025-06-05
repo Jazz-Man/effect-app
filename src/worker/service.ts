@@ -1,14 +1,10 @@
-import { Context, Data, type Effect } from "effect";
-
-import type { ServiceName, ServiceUrl } from "./ipServices";
+import { Context, type Effect } from "effect";
 
 import type { Lookup } from "geoip-lite";
 
-export type TGeoIPParam = string | number;
+import type { GeoIpNotFoundError } from "./error";
 
-export class GeoIpNotFoundError extends Data.TaggedError(
-  "GeoIpNotFoundError",
-) {}
+export type TGeoIPParam = string | number;
 
 export class GeoIpService extends Context.Tag("GeoIpService")<
   GeoIpService,
@@ -16,13 +12,5 @@ export class GeoIpService extends Context.Tag("GeoIpService")<
     lookup: (
       ip: TGeoIPParam,
     ) => Effect.Effect<Lookup, GeoIpNotFoundError, never>;
-  }
->() {}
-
-export class ServiceRegistry extends Context.Tag("ServiceRegistry")<
-  ServiceRegistry,
-  {
-    getRandomizedServices: () => Effect.Effect<ServiceName[]>;
-    getServiceUrl: (name: ServiceName) => Effect.Effect<ServiceUrl>;
   }
 >() {}
