@@ -45,6 +45,7 @@ export const IPInfoResponse = Schema.Struct({
   IP: Schema.optional(IPField),
   ip: Schema.optional(IPField),
   remote_addr: Schema.optional(IPField),
+  raw: Schema.optional(IPField),
 });
 
 export const IPInfoResponseUnion = Schema.Union(IPInfoResponse, IpFromString);
