@@ -1,9 +1,3 @@
-import * as Cookies from "@effect/platform/Cookies";
-import * as Headers from "@effect/platform/Headers";
-import type * as HttpClientError from "@effect/platform/HttpClientError";
-import type * as ClientResponse from "@effect/platform/HttpClientResponse";
-import * as IncomingMessage from "@effect/platform/HttpIncomingMessage";
-import * as UrlParams from "@effect/platform/UrlParams";
 import * as Cause from "effect/Cause";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
@@ -21,49 +15,59 @@ import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import type { NoExcessProperties, NoInfer } from "effect/Types";
-import type * as Client from "../BunHttpClient";
-import type * as ClientRequest from "../BunHttpClientRequest";
 
 import * as internalRequest from "./httpBunClientRequest";
+import * as internalResponse from "./httpBunClientResponse";
+
+import {
+  Cookies,
+  Headers,
+  type HttpClient,
+  HttpClientError,
+  type HttpClientRequest,
+  type HttpClientResponse,
+  HttpIncomingMessage,
+  HttpTraceContext,
+  UrlParams,
+} from "@effect/platform";
 
 /** @internal */
-export const httpClientTagKey = "@effect-app/BunHttpClient";
+export const TypeId: HttpClient.TypeId = Symbol.for(
+  "@effect/platform/HttpClient",
+) as HttpClient.TypeId;
 
 /** @internal */
-export const TypeId: Client.TypeId = Symbol.for(
-  httpClientTagKey,
-) as Client.TypeId;
-
-/** @internal */
-export const tag = Context.GenericTag<Client.HttpClient>(httpClientTagKey);
+export const tag = Context.GenericTag<HttpClient.HttpClient>(
+  "@effect/platform/HttpClient",
+);
 
 /** @internal */
 export const currentTracerDisabledWhen = globalValue(
-  Symbol.for(`${httpClientTagKey}/tracerDisabledWhen`),
+  Symbol.for("@effect/platform/HttpClient/tracerDisabledWhen"),
   () =>
-    FiberRef.unsafeMake<Predicate.Predicate<ClientRequest.HttpClientRequest>>(
-      constFalse,
-    ),
+    FiberRef.unsafeMake<
+      Predicate.Predicate<HttpClientRequest.HttpClientRequest>
+    >(constFalse),
 );
 
 /** @internal */
 export const withTracerDisabledWhen = dual<
   (
-    predicate: Predicate.Predicate<ClientRequest.HttpClientRequest>,
+    predicate: Predicate.Predicate<HttpClientRequest.HttpClientRequest>,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E, R>,
   <E, R>(
-    self: Client.HttpClient.With<E, R>,
-    predicate: Predicate.Predicate<ClientRequest.HttpClientRequest>,
-  ) => Client.HttpClient.With<E, R>
+    self: HttpClient.HttpClient.With<E, R>,
+    predicate: Predicate.Predicate<HttpClientRequest.HttpClientRequest>,
+  ) => HttpClient.HttpClient.With<E, R>
 >(2, (self, pred) =>
   transformResponse(self, Effect.locally(currentTracerDisabledWhen, pred)),
 );
 
 /** @internal */
 export const currentTracerPropagation = globalValue(
-  Symbol.for(`${httpClientTagKey}/currentTracerPropagation`),
+  Symbol.for("@effect/platform/HttpClient/currentTracerPropagation"),
   () => FiberRef.unsafeMake(true),
 );
 
@@ -72,36 +76,37 @@ export const withTracerPropagation = dual<
   (
     enabled: boolean,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E, R>,
   <E, R>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     enabled: boolean,
-  ) => Client.HttpClient.With<E, R>
+  ) => HttpClient.HttpClient.With<E, R>
 >(2, (self, enabled) =>
   transformResponse(self, Effect.locally(currentTracerPropagation, enabled)),
 );
 
 /** @internal */
-export const SpanNameGenerator = Context.Reference<Client.SpanNameGenerator>()(
-  `${httpClientTagKey}/SpanNameGenerator`,
-  {
-    defaultValue: () => (request: ClientRequest.HttpClientRequest) =>
-      `http.client ${request.method}`,
-  },
-);
+export const SpanNameGenerator =
+  Context.Reference<HttpClient.SpanNameGenerator>()(
+    "@effect/platform/HttpClient/SpanNameGenerator",
+    {
+      defaultValue: () => (request: HttpClientRequest.HttpClientRequest) =>
+        `http.client ${request.method}`,
+    },
+  );
 
 /** @internal */
 export const withSpanNameGenerator = dual<
   (
-    f: (request: ClientRequest.HttpClientRequest) => string,
+    f: (request: HttpClientRequest.HttpClientRequest) => string,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E, R>,
   <E, R>(
-    self: Client.HttpClient.With<E, R>,
-    f: (request: ClientRequest.HttpClientRequest) => string,
-  ) => Client.HttpClient.With<E, R>
+    self: HttpClient.HttpClient.With<E, R>,
+    f: (request: HttpClientRequest.HttpClientRequest) => string,
+  ) => HttpClient.HttpClient.With<E, R>
 >(2, (self, f) =>
   transformResponse(self, Effect.provideService(SpanNameGenerator, f)),
 );
@@ -114,85 +119,87 @@ const ClientProto = {
   ...Inspectable.BaseProto,
   toJSON() {
     return {
-      _id: httpClientTagKey,
+      _id: "@effect/platform/HttpClient",
     };
   },
   get(
-    this: Client.HttpClient,
+    this: HttpClient.HttpClient,
     url: string | URL,
-    options?: ClientRequest.Options.NoBody,
+    options?: HttpClientRequest.Options.NoBody,
   ) {
     return this.execute(internalRequest.get(url, options));
   },
   head(
-    this: Client.HttpClient,
+    this: HttpClient.HttpClient,
     url: string | URL,
-    options?: ClientRequest.Options.NoBody,
+    options?: HttpClientRequest.Options.NoBody,
   ) {
     return this.execute(internalRequest.head(url, options));
   },
   post(
-    this: Client.HttpClient,
+    this: HttpClient.HttpClient,
     url: string | URL,
-    options: ClientRequest.Options.NoUrl,
+    options: HttpClientRequest.Options.NoUrl,
   ) {
     return this.execute(internalRequest.post(url, options));
   },
   put(
-    this: Client.HttpClient,
+    this: HttpClient.HttpClient,
     url: string | URL,
-    options: ClientRequest.Options.NoUrl,
+    options: HttpClientRequest.Options.NoUrl,
   ) {
     return this.execute(internalRequest.put(url, options));
   },
   patch(
-    this: Client.HttpClient,
+    this: HttpClient.HttpClient,
     url: string | URL,
-    options: ClientRequest.Options.NoUrl,
+    options: HttpClientRequest.Options.NoUrl,
   ) {
     return this.execute(internalRequest.patch(url, options));
   },
   del(
-    this: Client.HttpClient,
+    this: HttpClient.HttpClient,
     url: string | URL,
-    options?: ClientRequest.Options.NoUrl,
+    options?: HttpClientRequest.Options.NoUrl,
   ) {
     return this.execute(internalRequest.del(url, options));
   },
   options(
-    this: Client.HttpClient,
+    this: HttpClient.HttpClient,
     url: string | URL,
-    options?: ClientRequest.Options.NoBody,
+    options?: HttpClientRequest.Options.NoBody,
   ) {
     return this.execute(internalRequest.options(url, options));
   },
 };
 
-const isClient = (u: unknown): u is Client.HttpClient.With<unknown, unknown> =>
+const isClient = (
+  u: unknown,
+): u is HttpClient.HttpClient.With<unknown, unknown> =>
   Predicate.hasProperty(u, TypeId);
 
-interface HttpClientImpl<E, R> extends Client.HttpClient.With<E, R> {
-  readonly preprocess: Client.HttpClient.Preprocess<E, R>;
-  readonly postprocess: Client.HttpClient.Postprocess<E, R>;
+interface HttpClientImpl<E, R> extends HttpClient.HttpClient.With<E, R> {
+  readonly preprocess: HttpClient.HttpClient.Preprocess<E, R>;
+  readonly postprocess: HttpClient.HttpClient.Postprocess<E, R>;
 }
 
 /** @internal */
 export const makeWith = <E2, R2, E, R>(
   postprocess: (
-    request: Effect.Effect<ClientRequest.HttpClientRequest, E2, R2>,
-  ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>,
-  preprocess: Client.HttpClient.Preprocess<E2, R2>,
-): Client.HttpClient.With<E, R> => {
+    request: Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>,
+  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
+  preprocess: HttpClient.HttpClient.Preprocess<E2, R2>,
+): HttpClient.HttpClient.With<E, R> => {
   const self = Object.create(ClientProto);
   self.preprocess = preprocess;
   self.postprocess = postprocess;
-  self.execute = (request: ClientRequest.HttpClientRequest) =>
+  self.execute = (request: HttpClientRequest.HttpClientRequest) =>
     postprocess(preprocess(request));
   return self;
 };
 
 const responseRegistry = globalValue(
-  `${httpClientTagKey}/responseRegistry`,
+  "@effect/platform/HttpClient/responseRegistry",
   () => {
     if (
       "FinalizationRegistry" in globalThis &&
@@ -205,21 +212,21 @@ const responseRegistry = globalValue(
       );
       return {
         register(
-          response: ClientResponse.HttpClientResponse,
+          response: HttpClientResponse.HttpClientResponse,
           controller: AbortController,
         ) {
           registry.register(response, controller, response);
         },
-        unregister(response: ClientResponse.HttpClientResponse) {
+        unregister(response: HttpClientResponse.HttpClientResponse) {
           registry.unregister(response);
         },
       };
     }
 
-    const timers = new Map<ClientResponse.HttpClientResponse, any>();
+    const timers = new Map<HttpClientResponse.HttpClientResponse, any>();
     return {
       register(
-        response: ClientResponse.HttpClientResponse,
+        response: HttpClientResponse.HttpClientResponse,
         controller: AbortController,
       ) {
         timers.set(
@@ -227,7 +234,7 @@ const responseRegistry = globalValue(
           setTimeout(() => controller.abort(), 5000),
         );
       },
-      unregister(response: ClientResponse.HttpClientResponse) {
+      unregister(response: HttpClientResponse.HttpClientResponse) {
         const timer = timers.get(response);
         if (timer === undefined) return;
         clearTimeout(timer);
@@ -238,25 +245,25 @@ const responseRegistry = globalValue(
 );
 
 const scopedRequests = globalValue(
-  `${httpClientTagKey}/scopedRequests`,
-  () => new WeakMap<ClientRequest.HttpClientRequest, AbortController>(),
+  "@effect/platform/HttpClient/scopedRequests",
+  () => new WeakMap<HttpClientRequest.HttpClientRequest, AbortController>(),
 );
 
 /** @internal */
 export const make = (
   f: (
-    request: ClientRequest.HttpClientRequest,
+    request: HttpClientRequest.HttpClientRequest,
     url: URL,
     signal: AbortSignal,
     fiber: Fiber.RuntimeFiber<
-      ClientResponse.HttpClientResponse,
+      HttpClientResponse.HttpClientResponse,
       HttpClientError.HttpClientError
     >,
   ) => Effect.Effect<
-    ClientResponse.HttpClientResponse,
+    HttpClientResponse.HttpClientResponse,
     HttpClientError.HttpClientError
   >,
-): Client.HttpClient =>
+): HttpClient.HttpClient =>
   makeWith(
     (effect) =>
       Effect.flatMap(effect, (request) =>
@@ -270,7 +277,7 @@ export const make = (
           );
           if (urlResult._tag === "Left") {
             return Effect.fail(
-              new Error.RequestError({
+              new HttpClientError.RequestError({
                 request,
                 reason: "InvalidUrl",
                 cause: urlResult.left,
@@ -337,7 +344,7 @@ export const make = (
               request = fiber.getFiberRef(currentTracerPropagation)
                 ? internalRequest.setHeaders(
                     request,
-                    TraceContext.toHeaders(span),
+                    HttpTraceContext.toHeaders(span),
                   )
                 : request;
               return Effect.uninterruptibleMask((restore) =>
@@ -378,19 +385,19 @@ export const make = (
           );
         }),
       ),
-    Effect.succeed as Client.HttpClient.Preprocess<never, never>,
+    Effect.succeed as HttpClient.HttpClient.Preprocess<never, never>,
   );
 
-class InterruptibleResponse implements ClientResponse.HttpClientResponse {
+class InterruptibleResponse implements HttpClientResponse.HttpClientResponse {
   constructor(
-    readonly original: ClientResponse.HttpClientResponse,
+    readonly original: HttpClientResponse.HttpClientResponse,
     readonly controller: AbortController,
   ) {}
 
-  readonly [internalResponse.TypeId]: ClientResponse.TypeId =
+  readonly [internalResponse.TypeId]: HttpClientResponse.TypeId =
     internalResponse.TypeId;
-  readonly [IncomingMessage.TypeId]: IncomingMessage.TypeId =
-    IncomingMessage.TypeId;
+  readonly [HttpIncomingMessage.TypeId]: HttpIncomingMessage.TypeId =
+    HttpIncomingMessage.TypeId;
 
   private applyInterrupt<A, E, R>(effect: Effect.Effect<A, E, R>) {
     return Effect.suspend(() => {
@@ -466,8 +473,8 @@ class InterruptibleResponse implements ClientResponse.HttpClientResponse {
 
 /** @internal */
 export const withScope = <E, R>(
-  self: Client.HttpClient.With<E, R>,
-): Client.HttpClient.With<E, R | Scope.Scope> =>
+  self: HttpClient.HttpClient.With<E, R>,
+): HttpClient.HttpClient.With<E, R | Scope.Scope> =>
   transform(self, (effect, request) => {
     const controller = new AbortController();
     scopedRequests.set(request, controller);
@@ -505,19 +512,19 @@ export const {
 export const transform = dual<
   <E, R, E1, R1>(
     f: (
-      effect: Effect.Effect<ClientResponse.HttpClientResponse, E, R>,
-      request: ClientRequest.HttpClientRequest,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
+      effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
+      request: HttpClientRequest.HttpClientRequest,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ) => (
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E | E1, R | R1>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E | E1, R | R1>,
   <E, R, E1, R1>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     f: (
-      effect: Effect.Effect<ClientResponse.HttpClientResponse, E, R>,
-      request: ClientRequest.HttpClientRequest,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
-  ) => Client.HttpClient.With<E | E1, R | R1>
+      effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
+      request: HttpClientRequest.HttpClientRequest,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
+  ) => HttpClient.HttpClient.With<E | E1, R | R1>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(
@@ -533,35 +540,37 @@ export const filterStatus = dual<
   (
     f: (status: number) => boolean,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E | HttpClientError.ResponseError, R>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E | HttpClientError.ResponseError, R>,
   <E, R>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     f: (status: number) => boolean,
-  ) => Client.HttpClient.With<E | HttpClientError.ResponseError, R>
+  ) => HttpClient.HttpClient.With<E | HttpClientError.ResponseError, R>
 >(2, (self, f) =>
   transformResponse(self, Effect.flatMap(internalResponse.filterStatus(f))),
 );
 
 /** @internal */
 export const filterStatusOk = <E, R>(
-  self: Client.HttpClient.With<E, R>,
-): Client.HttpClient.With<E | HttpClientError.ResponseError, R> =>
+  self: HttpClient.HttpClient.With<E, R>,
+): HttpClient.HttpClient.With<E | HttpClientError.ResponseError, R> =>
   transformResponse(self, Effect.flatMap(internalResponse.filterStatusOk));
 
 /** @internal */
 export const transformResponse = dual<
   <E, R, E1, R1>(
     f: (
-      effect: Effect.Effect<ClientResponse.HttpClientResponse, E, R>,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
-  ) => (self: Client.HttpClient.With<E, R>) => Client.HttpClient.With<E1, R1>,
+      effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
+  ) => (
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E1, R1>,
   <E, R, E1, R1>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     f: (
-      effect: Effect.Effect<ClientResponse.HttpClientResponse, E, R>,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
-  ) => Client.HttpClient.With<E1, R1>
+      effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
+  ) => HttpClient.HttpClient.With<E1, R1>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(
@@ -576,26 +585,26 @@ export const catchTag: {
     tag: K,
     f: (
       e: Extract<E, { _tag: K }>,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ): <R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E1 | Exclude<E, { _tag: K }>, R1 | R>;
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E1 | Exclude<E, { _tag: K }>, R1 | R>;
   <R, E, K extends E extends { _tag: string } ? E["_tag"] : never, R1, E1>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     tag: K,
     f: (
       e: Extract<E, { _tag: K }>,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
-  ): Client.HttpClient.With<E1 | Exclude<E, { _tag: K }>, R1 | R>;
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
+  ): HttpClient.HttpClient.With<E1 | Exclude<E, { _tag: K }>, R1 | R>;
 } = dual(
   3,
   <R, E, K extends E extends { _tag: string } ? E["_tag"] : never, R1, E1>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     tag: K,
     f: (
       e: Extract<E, { _tag: K }>,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
-  ): Client.HttpClient.With<E1 | Exclude<E, { _tag: K }>, R1 | R> =>
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
+  ): HttpClient.HttpClient.With<E1 | Exclude<E, { _tag: K }>, R1 | R> =>
     transformResponse(self, Effect.catchTag(tag, f)),
 );
 
@@ -606,7 +615,7 @@ export const catchTags: {
     Cases extends {
       [K in Extract<E, { _tag: string }>["_tag"]]+?: (
         error: Extract<E, { _tag: K }>,
-      ) => Effect.Effect<ClientResponse.HttpClientResponse, any, any>;
+      ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
     } & (unknown extends E
       ? {}
       : {
@@ -617,7 +626,7 @@ export const catchTags: {
         }),
   >(
     cases: Cases,
-  ): <R>(self: Client.HttpClient.With<E, R>) => Client.HttpClient.With<
+  ): <R>(self: HttpClient.HttpClient.With<E, R>) => HttpClient.HttpClient.With<
     | Exclude<E, { _tag: keyof Cases }>
     | {
         [K in keyof Cases]: Cases[K] extends (
@@ -641,7 +650,7 @@ export const catchTags: {
     Cases extends {
       [K in Extract<E, { _tag: string }>["_tag"]]+?: (
         error: Extract<E, { _tag: K }>,
-      ) => Effect.Effect<ClientResponse.HttpClientResponse, any, any>;
+      ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
     } & (unknown extends E
       ? {}
       : {
@@ -651,9 +660,9 @@ export const catchTags: {
           >]: never;
         }),
   >(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     cases: Cases,
-  ): Client.HttpClient.With<
+  ): HttpClient.HttpClient.With<
     | Exclude<E, { _tag: keyof Cases }>
     | {
         [K in keyof Cases]: Cases[K] extends (
@@ -679,7 +688,7 @@ export const catchTags: {
     Cases extends {
       [K in Extract<E, { _tag: string }>["_tag"]]+?: (
         error: Extract<E, { _tag: K }>,
-      ) => Effect.Effect<ClientResponse.HttpClientResponse, any, any>;
+      ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
     } & (unknown extends E
       ? {}
       : {
@@ -689,9 +698,9 @@ export const catchTags: {
           >]: never;
         }),
   >(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     cases: Cases,
-  ): Client.HttpClient.With<
+  ): HttpClient.HttpClient.With<
     | Exclude<E, { _tag: keyof Cases }>
     | {
         [K in keyof Cases]: Cases[K] extends (
@@ -714,40 +723,40 @@ export const catchTags: {
 /** @internal */
 export const catchAll: {
   <E, E2, R2>(
-    f: (e: E) => Effect.Effect<ClientResponse.HttpClientResponse, E2, R2>,
+    f: (e: E) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
   ): <R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E2, R | R2>;
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E2, R | R2>;
   <E, R, E2, R2>(
-    self: Client.HttpClient.With<E, R>,
-    f: (e: E) => Effect.Effect<ClientResponse.HttpClientResponse, E2, R2>,
-  ): Client.HttpClient.With<E2, R | R2>;
+    self: HttpClient.HttpClient.With<E, R>,
+    f: (e: E) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
+  ): HttpClient.HttpClient.With<E2, R | R2>;
 } = dual(
   2,
   <E, R, E2, R2>(
-    self: Client.HttpClient.With<E, R>,
-    f: (e: E) => Effect.Effect<ClientResponse.HttpClientResponse, E2, R2>,
-  ): Client.HttpClient.With<E2, R | R2> =>
+    self: HttpClient.HttpClient.With<E, R>,
+    f: (e: E) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
+  ): HttpClient.HttpClient.With<E2, R | R2> =>
     transformResponse(self, Effect.catchAll(f)),
 );
 
 /** @internal */
 export const filterOrElse: {
   <E2, R2>(
-    predicate: Predicate.Predicate<ClientResponse.HttpClientResponse>,
+    predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
     orElse: (
-      response: ClientResponse.HttpClientResponse,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E2, R2>,
+      response: HttpClientResponse.HttpClientResponse,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
   ): <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E2 | E, R2 | R>;
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E2 | E, R2 | R>;
   <E, R, E2, R2>(
-    self: Client.HttpClient.With<E, R>,
-    predicate: Predicate.Predicate<ClientResponse.HttpClientResponse>,
+    self: HttpClient.HttpClient.With<E, R>,
+    predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
     orElse: (
-      response: ClientResponse.HttpClientResponse,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E2, R2>,
-  ): Client.HttpClient.With<E2 | E, R2 | R>;
+      response: HttpClientResponse.HttpClientResponse,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
+  ): HttpClient.HttpClient.With<E2 | E, R2 | R>;
 } = dual(3, (self, f, orElse) =>
   transformResponse(self, Effect.filterOrElse(f, orElse)),
 );
@@ -755,16 +764,16 @@ export const filterOrElse: {
 /** @internal */
 export const filterOrFail: {
   <E2>(
-    predicate: Predicate.Predicate<ClientResponse.HttpClientResponse>,
-    orFailWith: (response: ClientResponse.HttpClientResponse) => E2,
+    predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
+    orFailWith: (response: HttpClientResponse.HttpClientResponse) => E2,
   ): <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E2 | E, R>;
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E2 | E, R>;
   <E, R, E2>(
-    self: Client.HttpClient.With<E, R>,
-    predicate: Predicate.Predicate<ClientResponse.HttpClientResponse>,
-    orFailWith: (response: ClientResponse.HttpClientResponse) => E2,
-  ): Client.HttpClient.With<E2 | E, R>;
+    self: HttpClient.HttpClient.With<E, R>,
+    predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
+    orFailWith: (response: HttpClientResponse.HttpClientResponse) => E2,
+  ): HttpClient.HttpClient.With<E2 | E, R>;
 } = dual(3, (self, f, orFailWith) =>
   transformResponse(self, Effect.filterOrFail(f, orFailWith)),
 );
@@ -772,14 +781,18 @@ export const filterOrFail: {
 /** @internal */
 export const mapRequest = dual<
   (
-    f: (a: ClientRequest.HttpClientRequest) => ClientRequest.HttpClientRequest,
+    f: (
+      a: HttpClientRequest.HttpClientRequest,
+    ) => HttpClientRequest.HttpClientRequest,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E, R>,
   <E, R>(
-    self: Client.HttpClient.With<E, R>,
-    f: (a: ClientRequest.HttpClientRequest) => ClientRequest.HttpClientRequest,
-  ) => Client.HttpClient.With<E, R>
+    self: HttpClient.HttpClient.With<E, R>,
+    f: (
+      a: HttpClientRequest.HttpClientRequest,
+    ) => HttpClientRequest.HttpClientRequest,
+  ) => HttpClient.HttpClient.With<E, R>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(client.postprocess, (request) =>
@@ -791,17 +804,17 @@ export const mapRequest = dual<
 export const mapRequestEffect = dual<
   <E2, R2>(
     f: (
-      a: ClientRequest.HttpClientRequest,
-    ) => Effect.Effect<ClientRequest.HttpClientRequest, E2, R2>,
+      a: HttpClientRequest.HttpClientRequest,
+    ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E | E2, R | R2>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E | E2, R | R2>,
   <E, R, E2, R2>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     f: (
-      a: ClientRequest.HttpClientRequest,
-    ) => Effect.Effect<ClientRequest.HttpClientRequest, E2, R2>,
-  ) => Client.HttpClient.With<E | E2, R | R2>
+      a: HttpClientRequest.HttpClientRequest,
+    ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>,
+  ) => HttpClient.HttpClient.With<E | E2, R | R2>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(client.postprocess as any, (request) =>
@@ -812,14 +825,18 @@ export const mapRequestEffect = dual<
 /** @internal */
 export const mapRequestInput = dual<
   (
-    f: (a: ClientRequest.HttpClientRequest) => ClientRequest.HttpClientRequest,
+    f: (
+      a: HttpClientRequest.HttpClientRequest,
+    ) => HttpClientRequest.HttpClientRequest,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E, R>,
   <E, R>(
-    self: Client.HttpClient.With<E, R>,
-    f: (a: ClientRequest.HttpClientRequest) => ClientRequest.HttpClientRequest,
-  ) => Client.HttpClient.With<E, R>
+    self: HttpClient.HttpClient.With<E, R>,
+    f: (
+      a: HttpClientRequest.HttpClientRequest,
+    ) => HttpClientRequest.HttpClientRequest,
+  ) => HttpClient.HttpClient.With<E, R>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(client.postprocess, (request) =>
@@ -831,17 +848,17 @@ export const mapRequestInput = dual<
 export const mapRequestInputEffect = dual<
   <E2, R2>(
     f: (
-      a: ClientRequest.HttpClientRequest,
-    ) => Effect.Effect<ClientRequest.HttpClientRequest, E2, R2>,
+      a: HttpClientRequest.HttpClientRequest,
+    ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E | E2, R | R2>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E | E2, R | R2>,
   <E, R, E2, R2>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     f: (
-      a: ClientRequest.HttpClientRequest,
-    ) => Effect.Effect<ClientRequest.HttpClientRequest, E2, R2>,
-  ) => Client.HttpClient.With<E | E2, R | R2>
+      a: HttpClientRequest.HttpClientRequest,
+    ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>,
+  ) => HttpClient.HttpClient.With<E | E2, R | R2>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(client.postprocess as any, (request) =>
@@ -853,26 +870,28 @@ export const mapRequestInputEffect = dual<
 export const retry: {
   <E, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
     options: O,
-  ): <R>(self: Client.HttpClient.With<E, R>) => Client.Retry.Return<R, E, O>;
+  ): <R>(
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.Retry.Return<R, E, O>;
   <B, E, R1>(
     policy: Schedule.Schedule<B, NoInfer<E>, R1>,
   ): <R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E, R1 | R>;
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E, R1 | R>;
   <E, R, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     options: O,
-  ): Client.Retry.Return<R, E, O>;
+  ): HttpClient.Retry.Return<R, E, O>;
   <E, R, B, R1>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     policy: Schedule.Schedule<B, E, R1>,
-  ): Client.HttpClient.With<E, R1 | R>;
+  ): HttpClient.HttpClient.With<E, R1 | R>;
 } = dual(
   2,
   <E extends E0, E0, R, R1, B>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     policy: Schedule.Schedule<B, E0, R1>,
-  ): Client.HttpClient.With<E, R | R1> =>
+  ): HttpClient.HttpClient.With<E, R | R1> =>
     transformResponse(self, Effect.retry(policy)),
 );
 
@@ -887,10 +906,10 @@ export const retryTransient: {
         }
       | Schedule.Schedule<B, NoInfer<E>, R1>,
   ): <R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E, R1 | R>;
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E, R1 | R>;
   <E, R, B, R1 = never>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     options:
       | {
           readonly while?: Predicate.Predicate<NoInfer<E>>;
@@ -898,11 +917,11 @@ export const retryTransient: {
           readonly times?: number;
         }
       | Schedule.Schedule<B, NoInfer<E>, R1>,
-  ): Client.HttpClient.With<E, R1 | R>;
+  ): HttpClient.HttpClient.With<E, R1 | R>;
 } = dual(
   2,
   <E extends E0, E0, R, B, R1 = never>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     options:
       | {
           readonly while?: Predicate.Predicate<NoInfer<E>>;
@@ -910,7 +929,7 @@ export const retryTransient: {
           readonly times?: number;
         }
       | Schedule.Schedule<B, NoInfer<E>, R1>,
-  ): Client.HttpClient.With<E, R | R1> =>
+  ): HttpClient.HttpClient.With<E, R | R1> =>
     transformResponse(
       self,
       Effect.retry({
@@ -930,7 +949,7 @@ const isTransientError = (error: unknown) =>
   isTransientHttpError(error);
 
 const isTransientHttpError = (error: unknown) =>
-  Error.isHttpClientError(error) &&
+  HttpClientError.isHttpClientError(error) &&
   ((error._tag === "RequestError" && error.reason === "Transport") ||
     (error._tag === "ResponseError" && error.response.status >= 429));
 
@@ -938,17 +957,17 @@ const isTransientHttpError = (error: unknown) =>
 export const tap = dual<
   <_, E2, R2>(
     f: (
-      response: ClientResponse.HttpClientResponse,
+      response: HttpClientResponse.HttpClientResponse,
     ) => Effect.Effect<_, E2, R2>,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E | E2, R | R2>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E | E2, R | R2>,
   <E, R, _, E2, R2>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     f: (
-      response: ClientResponse.HttpClientResponse,
+      response: HttpClientResponse.HttpClientResponse,
     ) => Effect.Effect<_, E2, R2>,
-  ) => Client.HttpClient.With<E | E2, R | R2>
+  ) => HttpClient.HttpClient.With<E | E2, R | R2>
 >(2, (self, f) => transformResponse(self, Effect.tap(f)));
 
 /** @internal */
@@ -956,25 +975,25 @@ export const tapError = dual<
   <_, E, E2, R2>(
     f: (e: NoInfer<E>) => Effect.Effect<_, E2, R2>,
   ) => <R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E | E2, R | R2>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E | E2, R | R2>,
   <E, R, _, E2, R2>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     f: (e: NoInfer<E>) => Effect.Effect<_, E2, R2>,
-  ) => Client.HttpClient.With<E | E2, R | R2>
+  ) => HttpClient.HttpClient.With<E | E2, R | R2>
 >(2, (self, f) => transformResponse(self, Effect.tapError(f)));
 
 /** @internal */
 export const tapRequest = dual<
   <_, E2, R2>(
-    f: (a: ClientRequest.HttpClientRequest) => Effect.Effect<_, E2, R2>,
+    f: (a: HttpClientRequest.HttpClientRequest) => Effect.Effect<_, E2, R2>,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E | E2, R | R2>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E | E2, R | R2>,
   <E, R, _, E2, R2>(
-    self: Client.HttpClient.With<E, R>,
-    f: (a: ClientRequest.HttpClientRequest) => Effect.Effect<_, E2, R2>,
-  ) => Client.HttpClient.With<E | E2, R | R2>
+    self: HttpClient.HttpClient.With<E, R>,
+    f: (a: HttpClientRequest.HttpClientRequest) => Effect.Effect<_, E2, R2>,
+  ) => HttpClient.HttpClient.With<E | E2, R | R2>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(client.postprocess as any, (request) =>
@@ -987,21 +1006,21 @@ export const withCookiesRef = dual<
   (
     ref: Ref.Ref<Cookies.Cookies>,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E, R>,
   <E, R>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     ref: Ref.Ref<Cookies.Cookies>,
-  ) => Client.HttpClient.With<E, R>
+  ) => HttpClient.HttpClient.With<E, R>
 >(
   2,
   <E, R>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     ref: Ref.Ref<Cookies.Cookies>,
-  ): Client.HttpClient.With<E, R> => {
+  ): HttpClient.HttpClient.With<E, R> => {
     const client = self as HttpClientImpl<E, R>;
     return makeWith(
-      (request: Effect.Effect<ClientRequest.HttpClientRequest, E, R>) =>
+      (request: Effect.Effect<HttpClientRequest.HttpClientRequest, E, R>) =>
         Effect.tap(client.postprocess(request), (response) =>
           Ref.update(ref, (cookies) =>
             Cookies.merge(cookies, response.cookies),
@@ -1028,24 +1047,24 @@ export const followRedirects = dual<
   (
     maxRedirects?: number | undefined,
   ) => <E, R>(
-    self: Client.HttpClient.With<E, R>,
-  ) => Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
+  ) => HttpClient.HttpClient.With<E, R>,
   <E, R>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     maxRedirects?: number | undefined,
-  ) => Client.HttpClient.With<E, R>
+  ) => HttpClient.HttpClient.With<E, R>
 >(
   (args) => isClient(args[0]),
   <E, R>(
-    self: Client.HttpClient.With<E, R>,
+    self: HttpClient.HttpClient.With<E, R>,
     maxRedirects?: number | undefined,
-  ): Client.HttpClient.With<E, R> => {
+  ): HttpClient.HttpClient.With<E, R> => {
     const client = self as HttpClientImpl<E, R>;
     return makeWith((request) => {
       const loop = (
-        request: ClientRequest.HttpClientRequest,
+        request: HttpClientRequest.HttpClientRequest,
         redirects: number,
-      ): Effect.Effect<ClientResponse.HttpClientResponse, E, R> =>
+      ): Effect.Effect<HttpClientResponse.HttpClientResponse, E, R> =>
         Effect.flatMap(
           client.postprocess(Effect.succeed(request)),
           (response) =>
@@ -1069,8 +1088,8 @@ export const followRedirects = dual<
 
 /** @internal */
 export const layerMergedContext = <E, R>(
-  effect: Effect.Effect<Client.HttpClient, E, R>,
-): Layer.Layer<Client.HttpClient, E, R> =>
+  effect: Effect.Effect<HttpClient.HttpClient, E, R>,
+): Layer.Layer<HttpClient.HttpClient, E, R> =>
   Layer.effect(
     tag,
     Effect.flatMap(Effect.context<never>(), (context) =>
