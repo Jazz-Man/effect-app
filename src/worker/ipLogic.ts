@@ -2,23 +2,19 @@ import { Effect, Schema } from "effect";
 import { IPInfoResponse } from "./schema";
 
 import { HttpClient } from "@effect/platform";
-import type { ServiceName } from "./ipServices";
-import { GeoIpService, ServiceRegistry } from "./service";
+import { GeoIpService } from "./service";
 
-const fetchIPInfo = (serviceName: ServiceName) =>
+const fetchIPInfo = (serviceName: string) =>
   Effect.gen(function* () {
     const client = (yield* HttpClient.HttpClient).pipe(
       HttpClient.filterStatusOk,
       HttpClient.followRedirects,
     );
 
-    const serviceRegistry = yield* ServiceRegistry;
     const geoIp = yield* GeoIpService;
 
-    const serviceNameUrl = yield* serviceRegistry.getServiceUrl(serviceName);
-
     const response = yield* client
-      .get(serviceNameUrl)
+      .get(serviceName)
       .pipe(
         Effect.withSpan("fetch_ip", { attributes: { service: serviceName } }),
       );
@@ -46,12 +42,7 @@ const fetchIPInfo = (serviceName: ServiceName) =>
   });
 
 export const getPublicIP = Effect.gen(function* (_) {
-  const serviceRegistry = yield* ServiceRegistry;
-  const services = yield* serviceRegistry.getRandomizedServices();
-
-  return yield* Effect.firstSuccessOf(
-    services.map((service) => fetchIPInfo(service)),
-  ).pipe(
+  return yield* fetchIPInfo("https://wtfismyip.com/json").pipe(
     Effect.catchAll(() =>
       Effect.fail(new Error("All IP services are unavailable")),
     ),

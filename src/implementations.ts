@@ -8,15 +8,22 @@ import { GeoIpService } from "./worker/service";
 
 export const BunFetchLive = FetchHttpClient.layer.pipe(
   Layer.provide(
-    Layer.succeed(FetchHttpClient.RequestInit, {
-      // verbose: true,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      proxy: getProxyUrl(),
+    // Layer.succeed(FetchHttpClient.RequestInit, {
+    //   // verbose: true,
+    //   tls: {
+    //     rejectUnauthorized: false,
+    //   },
+    //   proxy: getProxyUrl(),
 
-      signal: AbortSignal.timeout(60000),
-    } as BunFetchRequestInit),
+    //   signal: AbortSignal.timeout(60000),
+    // } as BunFetchRequestInit),
+    // Layer.succeed(FetchHttpClient.RequestInit, (...args) => {
+    //   return args;
+    // }),
+    Layer.succeed(FetchHttpClient.Fetch, (...args) => {
+      console.log(args);
+      return fetch(...args);
+    }),
   ),
 );
 

@@ -54,10 +54,24 @@ const getPublicIP = Effect.gen(function* (_) {
   ).pipe(Effect.catchAll(() => Effect.fail(new IpServicesNotAvailableError())));
 });
 
-Effect.runPromise(getPublicIP.pipe(Effect.provide(AppServices)))
-  .then((result) => {
-    console.log("Public IP Info:", result);
-  })
-  .catch((error) => {
-    console.error("Error:", error.message);
-  });
+// Effect.runPromise(getPublicIP.pipe(Effect.provide(AppServices)))
+//   .then((result) => {
+//     console.log("Public IP Info:", result);
+//   })
+//   .catch((error) => {
+//     console.error("Error:", error.message);
+//   });
+
+import { FiberRef } from "effect";
+// import { HttpClient } from "@effect/platform"
+
+// Define the internal context key (dangerous - relies on internal structure)
+const requestInitTagKey = "@effect/platform/FetchHttpClient/FetchOptions";
+
+// Create a request with proxy
+const myRequest = HttpClient.get("https://wtfismyip.com/json").pipe(
+  Effect.locally(requestInitTagKey as any, { verbose: true } as any),
+);
+
+// Run the effect
+Effect.runPromise(myRequest).then(console.log);

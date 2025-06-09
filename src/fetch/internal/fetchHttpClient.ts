@@ -9,19 +9,18 @@ import {
   HttpClientResponse,
 } from "@effect/platform";
 
-import type { BodyInit } from "bun";
+import { type BodyInit, fetch as bunFetch } from "bun";
 
 /** @internal */
-export const fetchTagKey = "@effect/platform/BunFetchHttpClient/Fetch";
+export const fetchTagKey = "@effect-app/BunFetchHttpClient/BunFetch";
 /** @internal */
 export const requestInitTagKey =
-  "@effect/platform/BunFetchHttpClient/FetchOptions";
+  "@effect-app/BunFetchHttpClient/BunFetchOptions";
 
-const fetch: HttpClient.HttpClient = HttpClient.make(
+export const fetch: HttpClient.HttpClient = HttpClient.make(
   (request, url, signal, fiber) => {
     const context = fiber.getFiberRef(FiberRef.currentContext);
-    const fetch: typeof globalThis.fetch =
-      context.unsafeMap.get(fetchTagKey) ?? globalThis.fetch;
+
     const options: BunFetchRequestInit =
       context.unsafeMap.get(requestInitTagKey) ?? {};
 
@@ -32,12 +31,11 @@ const fetch: HttpClient.HttpClient = HttpClient.make(
         )
       : request.headers;
 
-    console.log(headers);
     const send = (body: BodyInit | undefined) =>
       Effect.map(
         Effect.tryPromise({
           try: () =>
-            fetch(url, {
+            bunFetch(url, {
               ...options,
               method: request.method,
               headers,
