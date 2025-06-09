@@ -12,11 +12,11 @@ import type {
   HttpClientRequest as BaseHttpClientRequest,
   Options as HttpClientRequestOption,
 } from "@effect/platform/HttpClientRequest";
+
 import type { HttpMethod } from "@effect/platform/HttpMethod";
-import type { Effect, Option, Schema } from "effect";
+import type { Effect, Option, Schema, Stream } from "effect";
 import type { Redacted } from "effect/Redacted";
 import type { ParseOptions } from "effect/SchemaAST";
-import type * as Stream from "effect/Stream";
 
 export const TypeId: unique symbol = Symbol.for(
   "@effect-app/BunHttpClientRequest",

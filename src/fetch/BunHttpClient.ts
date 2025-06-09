@@ -1,23 +1,26 @@
-import type { Cookies } from "@effect/platform/Cookies";
-import type * as HttpClientError from "@effect/platform/HttpClientError";
-import type * as ClientResponse from "@effect/platform/HttpClientResponse";
-/**
- * @since 1.0.0
- */
-import * as Context from "effect/Context";
-import type * as Effect from "effect/Effect";
+import type {
+  HttpClientResponse as ClientResponse,
+  Cookies,
+  HttpClientError,
+} from "@effect/platform";
+
+import {
+  Context,
+  type Effect,
+  type FiberRef,
+  type Predicate,
+  type Schedule,
+} from "effect";
+
 import type { RuntimeFiber } from "effect/Fiber";
-import type * as FiberRef from "effect/FiberRef";
 import type { Inspectable } from "effect/Inspectable";
 import type { Layer } from "effect/Layer";
 import type { Pipeable } from "effect/Pipeable";
-import type * as Predicate from "effect/Predicate";
 import type { Ref } from "effect/Ref";
-import type * as Schedule from "effect/Schedule";
 import type { Scope } from "effect/Scope";
-import type { NoExcessProperties, NoInfer } from "effect/Types";
-import type * as ClientRequest from "./BunHttpClientRequest.js";
-import * as internal from "./internal/httpClient";
+import type { NoExcessProperties } from "effect/Types";
+import type * as ClientRequest from "./BunHttpClientRequest";
+import * as internal from "./internal/httpBunClient";
 
 /**
  * @since 1.0.0
