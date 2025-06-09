@@ -4,7 +4,7 @@ import type { Lookup } from "geoip-lite";
 
 import { FetchHttpClient, HttpClient } from "@effect/platform";
 
-import type { GeoIpNotFoundError } from "./error";
+import { type GeoIpNotFoundError, IpServicesFailedError } from "./error";
 import { IPInfoResponseUnion } from "./schema";
 
 export type TGeoIPParam = string | number;
@@ -26,25 +26,20 @@ export class IpInfo extends Effect.Service<IpInfo>()("IpInfo", {
     );
 
     const getMyIp = (url: string) =>
-      client
-        .get(url, {
-          acceptJson: true,
-        })
-        .pipe(
-          Effect.flatMap((response) =>
-            Effect.gen(function* () {
-              const isJson =
-                response.headers["content-type"]?.includes(
-                  "application/json",
-                ) ?? false;
+      client.get(url).pipe(
+        Effect.flatMap((response) =>
+          Effect.gen(function* () {
+            const isJson =
+              response.headers["content-type"]?.includes("application/json") ??
+              false;
 
-              return yield* Schema.decodeUnknown(IPInfoResponseUnion)(
-                isJson ? yield* response.json : yield* response.text,
-              );
-            }),
-          ),
-          Effect.scoped,
-        );
+            return yield* Schema.decodeUnknown(IPInfoResponseUnion)(
+              isJson ? yield* response.json : yield* response.text,
+            );
+          }),
+        ),
+        Effect.mapError(() => new IpServicesFailedError()),
+      );
 
     return { getMyIp } as const;
   }),
