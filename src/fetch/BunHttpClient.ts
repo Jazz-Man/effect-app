@@ -1,7 +1,4 @@
-import type {
-  HttpClientResponse as ClientResponse,
-  HttpClientError,
-} from "@effect/platform";
+import type { HttpClientError, HttpClientResponse } from "@effect/platform";
 
 import { Context, type Effect } from "effect";
 
@@ -19,7 +16,7 @@ import type { Ref } from "effect/Ref";
 import type { Schedule } from "effect/Schedule";
 import type { Scope } from "effect/Scope";
 import type { NoExcessProperties } from "effect/Types";
-import type * as BunHttpClientRequest from "./BunHttpClientRequest";
+import type * as BunHttpClientRequest from "./BunHttpClientRequest.ts";
 import * as internal from "./internal/httpBunClient.ts";
 
 /**
@@ -37,36 +34,36 @@ export interface BunHttpClientWith<E, R = never> extends Pipeable, Inspectable {
   readonly [TypeId]: TypeId;
   readonly execute: (
     request: BunHttpClientRequest.HttpClientRequest,
-  ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>;
+  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
 
   readonly get: (
     url: string | URL,
     options?: BunHttpClientRequest.BunOptions.NoBody,
-  ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>;
+  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly head: (
     url: string | URL,
     options?: BunHttpClientRequest.BunOptions.NoBody,
-  ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>;
+  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly post: (
     url: string | URL,
     options?: BunHttpClientRequest.BunOptions.NoUrl,
-  ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>;
+  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly patch: (
     url: string | URL,
     options?: BunHttpClientRequest.BunOptions.NoUrl,
-  ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>;
+  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly put: (
     url: string | URL,
     options?: BunHttpClientRequest.BunOptions.NoUrl,
-  ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>;
+  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly del: (
     url: string | URL,
     options?: BunHttpClientRequest.BunOptions.NoUrl,
-  ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>;
+  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly options: (
     url: string | URL,
     options?: BunHttpClientRequest.BunOptions.NoUrl,
-  ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>;
+  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
 }
 
 export type BunHttpClientPreprocess<E, R> = (
@@ -75,10 +72,10 @@ export type BunHttpClientPreprocess<E, R> = (
 
 export type BunHttpClientPostprocess<E = never, R = never> = (
   request: Effect.Effect<BunHttpClientRequest.HttpClientRequest, E, R>,
-) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>;
+) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
 
 export type BunHttpClientResponseType = Effect.Effect<
-  ClientResponse.HttpClientResponse,
+  HttpClientResponse.HttpClientResponse,
   HttpClientError.HttpClientError,
   BunHttpClient
 >;
@@ -130,7 +127,7 @@ export const options: (
 
 export const catchAll: {
   <E, E2, R2>(
-    f: (e: E) => Effect.Effect<ClientResponse.HttpClientResponse, E2, R2>,
+    f: (e: E) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
   ): <R>(self: BunHttpClientWith<E, R>) => BunHttpClientWith<E2, R2 | R>;
   <E, R, A2, E2, R2>(
     self: BunHttpClientWith<E, R>,
@@ -143,7 +140,7 @@ export const catchTag: {
     tag: K,
     f: (
       e: Extract<E, { _tag: K }>,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ): <R>(
     self: BunHttpClientWith<E, R>,
   ) => BunHttpClientWith<E1 | Exclude<E, { _tag: K }>, R1 | R>;
@@ -152,7 +149,7 @@ export const catchTag: {
     tag: K,
     f: (
       e: Extract<E, { _tag: K }>,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ): BunHttpClientWith<E1 | Exclude<E, { _tag: K }>, R1 | R>;
 } = internal.catchTag;
 
@@ -162,7 +159,7 @@ export const catchTags: {
     Cases extends {
       [K in Extract<E, { _tag: string }>["_tag"]]+?: (
         error: Extract<E, { _tag: K }>,
-      ) => Effect.Effect<ClientResponse.HttpClientResponse, any, any>;
+      ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
     } & (unknown extends E
       ? {}
       : {
@@ -197,7 +194,7 @@ export const catchTags: {
     Cases extends {
       [K in Extract<E, { _tag: string }>["_tag"]]+?: (
         error: Extract<E, { _tag: K }>,
-      ) => Effect.Effect<ClientResponse.HttpClientResponse, any, any>;
+      ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
     } & (unknown extends E
       ? {}
       : {
@@ -235,17 +232,17 @@ export const catchTags: {
  */
 export const filterOrElse: {
   <E2, R2>(
-    predicate: Predicate<ClientResponse.HttpClientResponse>,
+    predicate: Predicate<HttpClientResponse.HttpClientResponse>,
     orElse: (
-      response: ClientResponse.HttpClientResponse,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E2, R2>,
+      response: HttpClientResponse.HttpClientResponse,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
   ): <E, R>(self: BunHttpClientWith<E, R>) => BunHttpClientWith<E2 | E, R2 | R>;
   <E, R, E2, R2>(
     self: BunHttpClientWith<E, R>,
-    predicate: Predicate<ClientResponse.HttpClientResponse>,
+    predicate: Predicate<HttpClientResponse.HttpClientResponse>,
     orElse: (
-      response: ClientResponse.HttpClientResponse,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E2, R2>,
+      response: HttpClientResponse.HttpClientResponse,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
   ): BunHttpClientWith<E2 | E, R2 | R>;
 } = internal.filterOrElse;
 
@@ -254,13 +251,13 @@ export const filterOrElse: {
  */
 export const filterOrFail: {
   <E2>(
-    predicate: Predicate<ClientResponse.HttpClientResponse>,
-    orFailWith: (response: ClientResponse.HttpClientResponse) => E2,
+    predicate: Predicate<HttpClientResponse.HttpClientResponse>,
+    orFailWith: (response: HttpClientResponse.HttpClientResponse) => E2,
   ): <E, R>(self: BunHttpClientWith<E, R>) => BunHttpClientWith<E2 | E, R>;
   <E, R, E2>(
     self: BunHttpClientWith<E, R>,
-    predicate: Predicate<ClientResponse.HttpClientResponse>,
-    orFailWith: (response: ClientResponse.HttpClientResponse) => E2,
+    predicate: Predicate<HttpClientResponse.HttpClientResponse>,
+    orFailWith: (response: HttpClientResponse.HttpClientResponse) => E2,
   ): BunHttpClientWith<E2 | E, R>;
 } = internal.filterOrFail;
 
@@ -300,7 +297,7 @@ export const filterStatusOk: <E, R>(
 export const makeWith: <E2, R2, E, R>(
   postprocess: (
     request: Effect.Effect<BunHttpClientRequest.HttpClientRequest, E2, R2>,
-  ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>,
+  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
   preprocess: BunHttpClientPreprocess<E2, R2>,
 ) => BunHttpClientWith<E, R> = internal.makeWith;
 
@@ -314,11 +311,11 @@ export const make: (
     url: URL,
     signal: AbortSignal,
     fiber: RuntimeFiber<
-      ClientResponse.HttpClientResponse,
+      HttpClientResponse.HttpClientResponse,
       HttpClientError.HttpClientError
     >,
   ) => Effect.Effect<
-    ClientResponse.HttpClientResponse,
+    HttpClientResponse.HttpClientResponse,
     HttpClientError.HttpClientError
   >,
 ) => BunHttpClient = internal.make;
@@ -330,16 +327,16 @@ export const make: (
 export const transform: {
   <E, R, E1, R1>(
     f: (
-      effect: Effect.Effect<ClientResponse.HttpClientResponse, E, R>,
+      effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
       request: BunHttpClientRequest.HttpClientRequest,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ): (self: BunHttpClientWith<E, R>) => BunHttpClientWith<E | E1, R | R1>;
   <E, R, E1, R1>(
     self: BunHttpClientWith<E, R>,
     f: (
-      effect: Effect.Effect<ClientResponse.HttpClientResponse, E, R>,
+      effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
       request: BunHttpClientRequest.HttpClientRequest,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ): BunHttpClientWith<E | E1, R | R1>;
 } = internal.transform;
 
@@ -350,14 +347,14 @@ export const transform: {
 export const transformResponse: {
   <E, R, E1, R1>(
     f: (
-      effect: Effect.Effect<ClientResponse.HttpClientResponse, E, R>,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
+      effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ): (self: BunHttpClientWith<E, R>) => BunHttpClientWith<E1, R1>;
   <E, R, E1, R1>(
     self: BunHttpClientWith<E, R>,
     f: (
-      effect: Effect.Effect<ClientResponse.HttpClientResponse, E, R>,
-    ) => Effect.Effect<ClientResponse.HttpClientResponse, E1, R1>,
+      effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ): BunHttpClientWith<E1, R1>;
 } = internal.transformResponse;
 
@@ -552,13 +549,13 @@ export const retryTransient: {
 export const tap: {
   <_, E2, R2>(
     f: (
-      response: ClientResponse.HttpClientResponse,
+      response: HttpClientResponse.HttpClientResponse,
     ) => Effect.Effect<_, E2, R2>,
   ): <E, R>(self: BunHttpClientWith<E, R>) => BunHttpClientWith<E | E2, R | R2>;
   <E, R, _, E2, R2>(
     self: BunHttpClientWith<E, R>,
     f: (
-      response: ClientResponse.HttpClientResponse,
+      response: HttpClientResponse.HttpClientResponse,
     ) => Effect.Effect<_, E2, R2>,
   ): BunHttpClientWith<E | E2, R | R2>;
 } = internal.tap;
