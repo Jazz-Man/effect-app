@@ -48,4 +48,4 @@ export const IpInfoResponse = Schema.Struct({
   raw: Schema.optional(ipField),
 });
 
-export const IPInfoResponseUnion = Schema.Union(IpInfoResponse, IpFromString);
+export const IpInfoResponseUnion = Schema.Union(IpInfoResponse, IpFromString);

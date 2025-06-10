@@ -5,7 +5,7 @@ import type { Lookup } from "geoip-lite";
 import { FetchHttpClient, HttpClient } from "@effect/platform";
 
 import { type GeoIpNotFoundError, IpServicesFailedError } from "./error.ts";
-import { IPInfoResponseUnion } from "./schema.ts";
+import { IpInfoResponseUnion } from "./schema.ts";
 
 export type TGeoIPParam = string | number;
 
@@ -40,7 +40,7 @@ export class IpInfo extends Effect.Service<IpInfo>()("IpInfo", {
                   "application/json",
                 ) ?? false;
 
-              return yield* Schema.decodeUnknown(IPInfoResponseUnion)(
+              return yield* Schema.decodeUnknown(IpInfoResponseUnion)(
                 isJson ? yield* response.json : yield* response.text,
               );
             }),
