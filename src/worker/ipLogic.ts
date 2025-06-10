@@ -1,5 +1,5 @@
 import { Effect, Schema } from "effect";
-import { IPInfoResponse } from "./schema.ts";
+import { IpInfoResponse } from "./schema.ts";
 
 import { HttpClient } from "@effect/platform";
 import { GeoIpService } from "./service.ts";
@@ -24,7 +24,7 @@ const fetchIpInfo = (serviceName: string) =>
 
     const body = yield* isJson ? response.json : response.text;
 
-    const result = yield* Schema.decodeUnknown(IPInfoResponse)(
+    const result = yield* Schema.decodeUnknown(IpInfoResponse)(
       isJson ? body : { raw: String(body).trim() },
     );
 

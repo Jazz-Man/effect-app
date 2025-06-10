@@ -886,7 +886,7 @@ export const retry: {
     options: O,
   ): <R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.Retry.Return<R, E, O>;
+  ) => BunHttpClient.BunHttpClientRetry.Return<R, E, O>;
   <B, E, R1>(
     policy: Schedule.Schedule<B, NoInfer<E>, R1>,
   ): <R>(
@@ -895,7 +895,7 @@ export const retry: {
   <E, R, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
     options: O,
-  ): BunHttpClient.Retry.Return<R, E, O>;
+  ): BunHttpClient.BunHttpClientRetry.Return<R, E, O>;
   <E, R, B, R1>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
     policy: Schedule.Schedule<B, E, R1>,

@@ -39,7 +39,7 @@ const IpFromString = Schema.transformOrFail(
   },
 );
 
-export const IPInfoResponse = Schema.Struct({
+export const IpInfoResponse = Schema.Struct({
   YourFuckingIPAddress: Schema.optional(ipField),
   origin: Schema.optional(ipField),
   IP: Schema.optional(ipField),
@@ -48,4 +48,4 @@ export const IPInfoResponse = Schema.Struct({
   raw: Schema.optional(ipField),
 });
 
-export const IPInfoResponseUnion = Schema.Union(IPInfoResponse, IpFromString);
+export const IPInfoResponseUnion = Schema.Union(IpInfoResponse, IpFromString);

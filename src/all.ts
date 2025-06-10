@@ -5,7 +5,7 @@ import {
   IpServicesNotAvailableError,
 } from "./worker/error.ts";
 import ipServices from "./worker/ipServices.ts";
-import { IPInfoResponse } from "./worker/schema.ts";
+import { IpInfoResponse } from "./worker/schema.ts";
 import { GeoIpService } from "./worker/service.ts";
 import { shuffleArray } from "./worker/utils.ts";
 
@@ -31,7 +31,7 @@ const fetchIpInfo = (serviceUrl: string) =>
 
     const body = yield* isJson ? response.json : response.text;
 
-    const result = yield* Schema.decodeUnknown(IPInfoResponse)(
+    const result = yield* Schema.decodeUnknown(IpInfoResponse)(
       isJson ? body : { raw: String(body).trim() },
     );
 

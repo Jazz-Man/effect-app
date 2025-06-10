@@ -7,7 +7,7 @@ import {
   fetchTagKey,
   layer as internalLayer,
   requestInitTagKey,
-} from "./internal/fetchHttpClient";
+} from "./internal/fetchHttpClient.ts";
 
 export class Fetch extends Context.Tag(fetchTagKey)<Fetch, typeof bunFetch>() {}
 

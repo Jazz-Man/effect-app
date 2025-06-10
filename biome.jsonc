@@ -28,7 +28,8 @@
         "noExplicitAny": "warn"
       },
       "correctness": {
-        "useHookAtTopLevel": "off"
+        "useHookAtTopLevel": "off",
+        "noNodejsModules": "off"
       }
     }
   },

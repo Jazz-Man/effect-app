@@ -14,7 +14,7 @@ import {
 
 import type { ParseOptions } from "effect/SchemaAST";
 
-import type * as BunHttpClientRequest from "../BunHttpClientRequest";
+import type * as BunHttpClientRequest from "../BunHttpClientRequest.tsx";
 
 import {
   HttpBody as Body,
