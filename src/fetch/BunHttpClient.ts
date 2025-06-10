@@ -1,20 +1,19 @@
 import type { HttpClientError, HttpClientResponse } from "@effect/platform";
 
-import { Context, type Effect } from "effect";
+import { Context, type Effect, type FiberRef, type Predicate } from "effect";
 
 import type { RuntimeFiber } from "effect/Fiber";
 
 import type { Cookies } from "@effect/platform/Cookies";
 
+import type { Inspectable } from "effect/Inspectable";
 import type { Layer } from "effect/Layer";
 
-import type { FiberRef } from "effect/FiberRef";
-import type { Inspectable } from "effect/Inspectable";
 import type { Pipeable } from "effect/Pipeable";
-import type { Predicate } from "effect/Predicate";
 import type { Ref } from "effect/Ref";
 import type { Schedule } from "effect/Schedule";
 import type { Scope } from "effect/Scope";
+
 import type { NoExcessProperties } from "effect/Types";
 import type * as BunHttpClientRequest from "./BunHttpClientRequest.ts";
 import * as internal from "./internal/httpBunClient.ts";
@@ -232,14 +231,14 @@ export const catchTags: {
  */
 export const filterOrElse: {
   <E2, R2>(
-    predicate: Predicate<HttpClientResponse.HttpClientResponse>,
+    predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
     orElse: (
       response: HttpClientResponse.HttpClientResponse,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
   ): <E, R>(self: BunHttpClientWith<E, R>) => BunHttpClientWith<E2 | E, R2 | R>;
   <E, R, E2, R2>(
     self: BunHttpClientWith<E, R>,
-    predicate: Predicate<HttpClientResponse.HttpClientResponse>,
+    predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
     orElse: (
       response: HttpClientResponse.HttpClientResponse,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
@@ -251,12 +250,12 @@ export const filterOrElse: {
  */
 export const filterOrFail: {
   <E2>(
-    predicate: Predicate<HttpClientResponse.HttpClientResponse>,
+    predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
     orFailWith: (response: HttpClientResponse.HttpClientResponse) => E2,
   ): <E, R>(self: BunHttpClientWith<E, R>) => BunHttpClientWith<E2 | E, R>;
   <E, R, E2>(
     self: BunHttpClientWith<E, R>,
-    predicate: Predicate<HttpClientResponse.HttpClientResponse>,
+    predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
     orFailWith: (response: HttpClientResponse.HttpClientResponse) => E2,
   ): BunHttpClientWith<E2 | E, R>;
 } = internal.filterOrFail;
@@ -442,49 +441,41 @@ export const mapRequestInputEffect: {
  * @since 1.0.0
  * @category error handling
  */
-export declare namespace BunHttpClientRetry {
-  /**
-   * @since 1.0.0
-   * @category error handling
-   */
-  export type BunHttpClientRetryReturn<
-    R,
-    E,
-    O extends NoExcessProperties<Effect.Retry.Options<E>, O>,
-  > = BunHttpClientWith<
-    | (O extends { schedule: Schedule<infer _O, infer _I, infer _R> }
-        ? E
-        : O extends { until: Predicate.Refinement<E, infer E2> }
-          ? E2
-          : E)
-    | (O extends {
-        while: (...args: any[]) => Effect.Effect<infer _A, infer E, infer _R>;
-      }
-        ? E
-        : never)
-    | (O extends {
-        until: (...args: any[]) => Effect.Effect<infer _A, infer E, infer _R>;
-      }
-        ? E
-        : never),
-    | R
-    | (O extends { schedule: Schedule<infer _O, infer _I, infer R> }
-        ? R
-        : never)
-    | (O extends {
-        while: (...args: any[]) => Effect.Effect<infer _A, infer _E, infer R>;
-      }
-        ? R
-        : never)
-    | (O extends {
-        until: (...args: any[]) => Effect.Effect<infer _A, infer _E, infer R>;
-      }
-        ? R
-        : never)
-  > extends infer Z
-    ? Z
-    : never;
-}
+export type BunHttpClientRetryReturn<
+  R,
+  E,
+  O extends NoExcessProperties<Effect.Retry.Options<E>, O>,
+> = BunHttpClientWith<
+  | (O extends { schedule: Schedule<infer _O, infer _I, infer _R> }
+      ? E
+      : O extends { until: Predicate.Refinement<E, infer E2> }
+        ? E2
+        : E)
+  | (O extends {
+      while: (...args: any[]) => Effect.Effect<infer _A, infer E, infer _R>;
+    }
+      ? E
+      : never)
+  | (O extends {
+      until: (...args: any[]) => Effect.Effect<infer _A, infer E, infer _R>;
+    }
+      ? E
+      : never),
+  | R
+  | (O extends { schedule: Schedule<infer _O, infer _I, infer R> } ? R : never)
+  | (O extends {
+      while: (...args: any[]) => Effect.Effect<infer _A, infer _E, infer R>;
+    }
+      ? R
+      : never)
+  | (O extends {
+      until: (...args: any[]) => Effect.Effect<infer _A, infer _E, infer R>;
+    }
+      ? R
+      : never)
+> extends infer Z
+  ? Z
+  : never;
 
 /**
  * Retries the request based on a provided schedule or policy.
@@ -495,16 +486,14 @@ export declare namespace BunHttpClientRetry {
 export const retry: {
   <E, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
     options: O,
-  ): <R>(
-    self: BunHttpClientWith<E, R>,
-  ) => BunHttpClientRetry.BunHttpClientRetryReturn<R, E, O>;
+  ): <R>(self: BunHttpClientWith<E, R>) => BunHttpClientRetryReturn<R, E, O>;
   <B, E, R1>(
     policy: Schedule<B, NoInfer<E>, R1>,
   ): <R>(self: BunHttpClientWith<E, R>) => BunHttpClientWith<E, R1 | R>;
   <E, R, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
     self: BunHttpClientWith<E, R>,
     options: O,
-  ): BunHttpClientRetry.BunHttpClientRetryReturn<R, E, O>;
+  ): BunHttpClientRetryReturn<R, E, O>;
   <E, R, B, R1>(
     self: BunHttpClientWith<E, R>,
     policy: Schedule<B, E, R1>,
@@ -524,7 +513,7 @@ export const retryTransient: {
   <B, E, R1 = never>(
     options:
       | {
-          readonly while?: Predicate<NoInfer<E>>;
+          readonly while?: Predicate.Predicate<NoInfer<E>>;
           readonly schedule?: Schedule<B, NoInfer<E>, R1>;
           readonly times?: number;
         }
@@ -534,7 +523,7 @@ export const retryTransient: {
     self: BunHttpClientWith<E, R>,
     options:
       | {
-          readonly while?: Predicate<NoInfer<E>>;
+          readonly while?: Predicate.Predicate<NoInfer<E>>;
           readonly schedule?: Schedule<B, NoInfer<E>, R1>;
           readonly times?: number;
         }
@@ -630,8 +619,8 @@ export const followRedirects: {
  * @since 1.0.0
  * @category Tracing
  */
-export const currentTracerDisabledWhen: FiberRef<
-  Predicate<BunHttpClientRequest.HttpClientRequest>
+export const currentTracerDisabledWhen: FiberRef.FiberRef<
+  Predicate.Predicate<BunHttpClientRequest.HttpClientRequest>
 > = internal.currentTracerDisabledWhen;
 
 /**
@@ -642,11 +631,11 @@ export const currentTracerDisabledWhen: FiberRef<
  */
 export const withTracerDisabledWhen: {
   (
-    predicate: Predicate<BunHttpClientRequest.HttpClientRequest>,
+    predicate: Predicate.Predicate<BunHttpClientRequest.HttpClientRequest>,
   ): <E, R>(self: BunHttpClientWith<E, R>) => BunHttpClientWith<E, R>;
   <E, R>(
     self: BunHttpClientWith<E, R>,
-    predicate: Predicate<BunHttpClientRequest.HttpClientRequest>,
+    predicate: Predicate.Predicate<BunHttpClientRequest.HttpClientRequest>,
   ): BunHttpClientWith<E, R>;
 } = internal.withTracerDisabledWhen;
 
@@ -654,7 +643,7 @@ export const withTracerDisabledWhen: {
  * @since 1.0.0
  * @category Tracing
  */
-export const currentTracerPropagation: FiberRef<boolean> =
+export const currentTracerPropagation: FiberRef.FiberRef<boolean> =
   internal.currentTracerPropagation;
 
 /**
