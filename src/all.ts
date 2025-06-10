@@ -1,19 +1,17 @@
 import { HttpClient } from "@effect/platform";
 import { Effect, Schema } from "effect";
-
-import { AppServices } from "./implementations";
 import {
   IpServicesFailedError,
   IpServicesNotAvailableError,
-} from "./worker/error";
-import ipServices from "./worker/ipServices";
-import { IPInfoResponse } from "./worker/schema";
-import { GeoIpService } from "./worker/service";
-import { shuffleArray } from "./worker/utils";
+} from "./worker/error.ts";
+import ipServices from "./worker/ipServices.ts";
+import { IPInfoResponse } from "./worker/schema.ts";
+import { GeoIpService } from "./worker/service.ts";
+import { shuffleArray } from "./worker/utils.ts";
 
 export type TGeoIPParam = string | number;
 
-const fetchIPInfo = (serviceUrl: string) =>
+const fetchIpInfo = (serviceUrl: string) =>
   Effect.gen(function* () {
     const geoIp = yield* GeoIpService;
 
@@ -46,23 +44,13 @@ const fetchIPInfo = (serviceUrl: string) =>
     return geoData;
   });
 
-const getPublicIP = Effect.gen(function* (_) {
+const _getPublicIp = Effect.gen(function* (_) {
   const shuffledServices = yield* shuffleArray(ipServices);
 
   return yield* Effect.firstSuccessOf(
-    shuffledServices.map((service) => fetchIPInfo(service)),
+    shuffledServices.map((service) => fetchIpInfo(service)),
   ).pipe(Effect.catchAll(() => Effect.fail(new IpServicesNotAvailableError())));
 });
-
-// Effect.runPromise(getPublicIP.pipe(Effect.provide(AppServices)))
-//   .then((result) => {
-//     console.log("Public IP Info:", result);
-//   })
-//   .catch((error) => {
-//     console.error("Error:", error.message);
-//   });
-
-import { FiberRef } from "effect";
 // import { HttpClient } from "@effect/platform"
 
 // Define the internal context key (dangerous - relies on internal structure)

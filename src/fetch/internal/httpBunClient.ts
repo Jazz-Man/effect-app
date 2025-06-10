@@ -1,25 +1,31 @@
-import * as Cause from "effect/Cause";
-import * as Context from "effect/Context";
-import * as Effect from "effect/Effect";
-import * as Exit from "effect/Exit";
+import {
+  Cause,
+  Context,
+  Effect,
+  Exit,
+  FiberRef,
+  Inspectable,
+  Layer,
+  Predicate,
+  Ref,
+  Schedule,
+  Scope,
+  Stream,
+} from "effect";
+
 import type * as Fiber from "effect/Fiber";
-import * as FiberRef from "effect/FiberRef";
+
 import { constFalse, dual } from "effect/Function";
 import { globalValue } from "effect/GlobalValue";
-import * as Inspectable from "effect/Inspectable";
-import * as Layer from "effect/Layer";
+
 import { pipeArguments } from "effect/Pipeable";
-import * as Predicate from "effect/Predicate";
-import * as Ref from "effect/Ref";
-import * as Schedule from "effect/Schedule";
-import * as Scope from "effect/Scope";
-import * as Stream from "effect/Stream";
+
 import type { NoExcessProperties, NoInfer } from "effect/Types";
 
-import * as internalRequest from "./httpBunClientRequest";
+import * as internalRequest from "./httpBunClientRequest.ts";
 
-import type * as BunHttpClient from "../BunHttpClient";
-import type * as BunHttpClientRequest from "../BunHttpClientRequest";
+import type * as BunHttpClient from "../BunHttpClient.tsx";
+import type * as BunHttpClientRequest from "../BunHttpClientRequest.tsx";
 
 import {
   Cookies,
@@ -236,7 +242,9 @@ const responseRegistry = globalValue(
       },
       unregister(response: HttpClientResponse.HttpClientResponse) {
         const timer = timers.get(response);
-        if (timer === undefined) return;
+        if (timer === undefined) {
+          return;
+        }
         clearTimeout(timer);
         timers.delete(response);
       },
@@ -290,7 +298,9 @@ export const make = (
             fiber.getFiberRef(currentTracerDisabledWhen)(request);
           if (tracerDisabled) {
             const effect = f(request, url, controller.signal, fiber);
-            if (scopedController) return effect;
+            if (scopedController) {
+              return effect;
+            }
             return Effect.uninterruptibleMask((restore) =>
               Effect.matchCauseEffect(restore(effect), {
                 onSuccess(response) {
@@ -366,7 +376,9 @@ export const make = (
                           String(redactedHeaders[name]),
                         );
                       }
-                      if (scopedController) return Effect.succeed(response);
+                      if (scopedController) {
+                        return Effect.succeed(response);
+                      }
                       responseRegistry.register(response, controller);
                       return Effect.succeed(
                         new InterruptibleResponse(response, controller),
@@ -632,7 +644,7 @@ export const catchTags: {
     | Exclude<E, { _tag: keyof Cases }>
     | {
         [K in keyof Cases]: Cases[K] extends (
-          ...args: Array<any>
+          ...args: any[]
         ) => Effect.Effect<any, infer E, any>
           ? E
           : never;
@@ -640,7 +652,7 @@ export const catchTags: {
     | R
     | {
         [K in keyof Cases]: Cases[K] extends (
-          ...args: Array<any>
+          ...args: any[]
         ) => Effect.Effect<any, any, infer R>
           ? R
           : never;
@@ -668,7 +680,7 @@ export const catchTags: {
     | Exclude<E, { _tag: keyof Cases }>
     | {
         [K in keyof Cases]: Cases[K] extends (
-          ...args: Array<any>
+          ...args: any[]
         ) => Effect.Effect<any, infer E, any>
           ? E
           : never;
@@ -676,7 +688,7 @@ export const catchTags: {
     | R
     | {
         [K in keyof Cases]: Cases[K] extends (
-          ...args: Array<any>
+          ...args: any[]
         ) => Effect.Effect<any, any, infer R>
           ? R
           : never;
@@ -706,7 +718,7 @@ export const catchTags: {
     | Exclude<E, { _tag: keyof Cases }>
     | {
         [K in keyof Cases]: Cases[K] extends (
-          ...args: Array<any>
+          ...args: any[]
         ) => Effect.Effect<any, infer E, any>
           ? E
           : never;
@@ -714,7 +726,7 @@ export const catchTags: {
     | R
     | {
         [K in keyof Cases]: Cases[K] extends (
-          ...args: Array<any>
+          ...args: any[]
         ) => Effect.Effect<any, any, infer R>
           ? R
           : never;

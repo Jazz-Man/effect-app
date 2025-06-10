@@ -1,4 +1,4 @@
-import * as OS from "node:os";
+import * as os from "node:os";
 import { Worker } from "@effect/platform";
 import { BunRuntime, BunWorker } from "@effect/platform-bun";
 import { Console, Context, Effect, Layer, Stream } from "effect";
@@ -9,7 +9,7 @@ class MyWorkerPool extends Context.Tag("@app/MyWorkerPool")<
 >() {}
 
 const PoolLive = Worker.makePoolLayer(MyWorkerPool, {
-  size: OS.availableParallelism(),
+  size: os.availableParallelism(),
 }).pipe(
   Layer.provide(
     BunWorker.layer(

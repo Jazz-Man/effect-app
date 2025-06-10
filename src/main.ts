@@ -1,6 +1,4 @@
 import { Effect, Random } from "effect";
-import { AppServices } from "./implementations";
-import { getPublicIP } from "./worker/ipLogic";
 
 // Effect.runPromise(getPublicIP.pipe(Effect.provide(AppServices)))
 //   .then((result) => {
@@ -10,9 +8,7 @@ import { getPublicIP } from "./worker/ipLogic";
 //     console.error("Error:", error.message);
 //   });
 
-const program = Effect.gen(function* () {
-  console.log(yield* Random.next);
-});
+const program = Effect.gen(function* () {});
 
 Effect.runSync(program);
 

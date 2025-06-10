@@ -4,8 +4,8 @@ import type { Lookup } from "geoip-lite";
 
 import { FetchHttpClient, HttpClient } from "@effect/platform";
 
-import { type GeoIpNotFoundError, IpServicesFailedError } from "./error";
-import { IPInfoResponseUnion } from "./schema";
+import { type GeoIpNotFoundError, IpServicesFailedError } from "./error.ts";
+import { IPInfoResponseUnion } from "./schema.ts";
 
 export type TGeoIPParam = string | number;
 

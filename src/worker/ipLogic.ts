@@ -1,10 +1,10 @@
 import { Effect, Schema } from "effect";
-import { IPInfoResponse } from "./schema";
+import { IPInfoResponse } from "./schema.ts";
 
 import { HttpClient } from "@effect/platform";
-import { GeoIpService } from "./service";
+import { GeoIpService } from "./service.ts";
 
-const fetchIPInfo = (serviceName: string) =>
+const fetchIpInfo = (serviceName: string) =>
   Effect.gen(function* () {
     const client = (yield* HttpClient.HttpClient).pipe(
       HttpClient.filterStatusOk,
@@ -42,7 +42,7 @@ const fetchIPInfo = (serviceName: string) =>
   });
 
 export const getPublicIP = Effect.gen(function* (_) {
-  return yield* fetchIPInfo("https://wtfismyip.com/json").pipe(
+  return yield* fetchIpInfo("https://wtfismyip.com/json").pipe(
     Effect.catchAll(() =>
       Effect.fail(new Error("All IP services are unavailable")),
     ),

@@ -3,23 +3,22 @@ import type {
   HttpClientError,
 } from "@effect/platform";
 
-import {
-  Context,
-  type Effect,
-  type FiberRef,
-  type Predicate,
-  type Schedule,
-} from "effect";
+import { Context, type Effect } from "effect";
 
 import type { RuntimeFiber } from "effect/Fiber";
-import type { Inspectable } from "effect/Inspectable";
+
+import type { Cookies } from "@effect/platform/Cookies";
+
 import type { Layer } from "effect/Layer";
-import type { Pipeable } from "effect/Pipeable";
+
+import type { FiberRef } from "effect/FiberRef";
+import type { Predicate } from "effect/Predicate";
 import type { Ref } from "effect/Ref";
+import type { Schedule } from "effect/Schedule";
 import type { Scope } from "effect/Scope";
 import type { NoExcessProperties } from "effect/Types";
 import type * as BunHttpClientRequest from "./BunHttpClientRequest";
-import * as internal from "./internal/httpBunClient";
+import * as internal from "./internal/httpBunClient.ts";
 
 /**
  * @since 1.0.0
@@ -27,27 +26,12 @@ import * as internal from "./internal/httpBunClient";
  */
 export const TypeId: unique symbol = internal.TypeId;
 
-/**
- * @since 1.0.0
- * @category type ids
- */
 export type TypeId = typeof TypeId;
 
-/**
- * @since 1.0.0
- * @category models
- */
 export interface BunHttpClient
   extends BunHttpClient.With<HttpClientError.HttpClientError> {}
 
-/**
- * @since 1.0.0
- */
 export declare namespace BunHttpClient {
-  /**
-   * @since 1.0.0
-   * @category models
-   */
   export interface With<E, R = never> extends Pipeable, Inspectable {
     readonly [TypeId]: TypeId;
     readonly execute: (
@@ -84,140 +68,66 @@ export declare namespace BunHttpClient {
     ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>;
   }
 
-  /**
-   * @since 1.0.0
-   * @category models
-   */
   export type Preprocess<E, R> = (
     request: BunHttpClientRequest.HttpClientRequest,
   ) => Effect.Effect<BunHttpClientRequest.HttpClientRequest, E, R>;
 
-  /**
-   * @since 1.0.0
-   * @category models
-   */
   export type Postprocess<E = never, R = never> = (
     request: Effect.Effect<BunHttpClientRequest.HttpClientRequest, E, R>,
   ) => Effect.Effect<ClientResponse.HttpClientResponse, E, R>;
 }
 
+export type BunHttpClientResponseType = Effect.Effect<
+  ClientResponse.HttpClientResponse,
+  HttpClientError.HttpClientError,
+  BunHttpClient
+>;
+
 export const tag = Context.GenericTag<BunHttpClient>(
   "@effect/platform/BunHttpClient",
 );
 
-/**
- * @since 1.0.0
- * @category tags
- */
 export const HttpClient: Context.Tag<BunHttpClient, BunHttpClient> = tag;
 
-/**
- * @since 1.0.0
- * @category accessors
- */
 export const execute: (
   request: BunHttpClientRequest.HttpClientRequest,
-) => Effect.Effect<
-  ClientResponse.HttpClientResponse,
-  HttpClientError.HttpClientError,
-  BunHttpClient
-> = internal.execute;
+) => BunHttpClientResponseType = internal.execute;
 
-/**
- * @since 1.0.0
- * @category accessors
- */
 export const get: (
   url: string | URL,
   options?: BunHttpClientRequest.BunOptions.NoBody | undefined,
-) => Effect.Effect<
-  ClientResponse.HttpClientResponse,
-  HttpClientError.HttpClientError,
-  BunHttpClient
-> = internal.get;
+) => BunHttpClientResponseType = internal.get;
 
-/**
- * @since 1.0.0
- * @category accessors
- */
 export const head: (
   url: string | URL,
   options?: BunHttpClientRequest.BunOptions.NoBody | undefined,
-) => Effect.Effect<
-  ClientResponse.HttpClientResponse,
-  HttpClientError.HttpClientError,
-  BunHttpClient
-> = internal.head;
+) => BunHttpClientResponseType = internal.head;
 
-/**
- * @since 1.0.0
- * @category accessors
- */
 export const post: (
   url: string | URL,
   options?: BunHttpClientRequest.BunOptions.NoUrl | undefined,
-) => Effect.Effect<
-  ClientResponse.HttpClientResponse,
-  HttpClientError.HttpClientError,
-  BunHttpClient
-> = internal.post;
+) => BunHttpClientResponseType = internal.post;
 
-/**
- * @since 1.0.0
- * @category accessors
- */
 export const patch: (
   url: string | URL,
   options?: BunHttpClientRequest.BunOptions.NoUrl | undefined,
-) => Effect.Effect<
-  ClientResponse.HttpClientResponse,
-  HttpClientError.HttpClientError,
-  BunHttpClient
-> = internal.patch;
+) => BunHttpClientResponseType = internal.patch;
 
-/**
- * @since 1.0.0
- * @category accessors
- */
 export const put: (
   url: string | URL,
   options?: BunHttpClientRequest.BunOptions.NoUrl | undefined,
-) => Effect.Effect<
-  ClientResponse.HttpClientResponse,
-  HttpClientError.HttpClientError,
-  BunHttpClient
-> = internal.put;
+) => BunHttpClientResponseType = internal.put;
 
-/**
- * @since 1.0.0
- * @category accessors
- */
 export const del: (
   url: string | URL,
   options?: BunHttpClientRequest.BunOptions.NoUrl | undefined,
-) => Effect.Effect<
-  ClientResponse.HttpClientResponse,
-  HttpClientError.HttpClientError,
-  BunHttpClient
-> = internal.del;
+) => BunHttpClientResponseType = internal.del;
 
-/**
- * @since 1.0.0
- * @category accessors
- */
 export const options: (
   url: string | URL,
   options?: BunHttpClientRequest.BunOptions.NoUrl | undefined,
-) => Effect.Effect<
-  ClientResponse.HttpClientResponse,
-  HttpClientError.HttpClientError,
-  BunHttpClient
-> = internal.options;
+) => BunHttpClientResponseType = internal.options;
 
-/**
- * @since 1.0.0
- * @category error handling
- */
 export const catchAll: {
   <E, E2, R2>(
     f: (e: E) => Effect.Effect<ClientResponse.HttpClientResponse, E2, R2>,
@@ -228,10 +138,6 @@ export const catchAll: {
   ): BunHttpClient.With<E2, R | R2>;
 } = internal.catchAll;
 
-/**
- * @since 1.0.0
- * @category error handling
- */
 export const catchTag: {
   <K extends E extends { _tag: string } ? E["_tag"] : never, E, E1, R1>(
     tag: K,
@@ -250,10 +156,6 @@ export const catchTag: {
   ): BunHttpClient.With<E1 | Exclude<E, { _tag: K }>, R1 | R>;
 } = internal.catchTag;
 
-/**
- * @since 1.0.0
- * @category error handling
- */
 export const catchTags: {
   <
     E,
@@ -275,7 +177,7 @@ export const catchTags: {
     | Exclude<E, { _tag: keyof Cases }>
     | {
         [K in keyof Cases]: Cases[K] extends (
-          ...args: Array<any>
+          ...args: any[]
         ) => Effect.Effect<any, infer E, any>
           ? E
           : never;
@@ -283,7 +185,7 @@ export const catchTags: {
     | R
     | {
         [K in keyof Cases]: Cases[K] extends (
-          ...args: Array<any>
+          ...args: any[]
         ) => Effect.Effect<any, any, infer R>
           ? R
           : never;
@@ -311,7 +213,7 @@ export const catchTags: {
     | Exclude<E, { _tag: keyof Cases }>
     | {
         [K in keyof Cases]: Cases[K] extends (
-          ...args: Array<any>
+          ...args: any[]
         ) => Effect.Effect<any, infer E, any>
           ? E
           : never;
@@ -319,7 +221,7 @@ export const catchTags: {
     | R
     | {
         [K in keyof Cases]: Cases[K] extends (
-          ...args: Array<any>
+          ...args: any[]
         ) => Effect.Effect<any, any, infer R>
           ? R
           : never;
@@ -329,13 +231,11 @@ export const catchTags: {
 
 /**
  * Filters the result of a response, or runs an alternative effect if the predicate fails.
- *
- * @since 1.0.0
- * @category filters
+
  */
 export const filterOrElse: {
   <E2, R2>(
-    predicate: Predicate.Predicate<ClientResponse.HttpClientResponse>,
+    predicate: Predicate<ClientResponse.HttpClientResponse>,
     orElse: (
       response: ClientResponse.HttpClientResponse,
     ) => Effect.Effect<ClientResponse.HttpClientResponse, E2, R2>,
@@ -344,7 +244,7 @@ export const filterOrElse: {
   ) => BunHttpClient.With<E2 | E, R2 | R>;
   <E, R, E2, R2>(
     self: BunHttpClient.With<E, R>,
-    predicate: Predicate.Predicate<ClientResponse.HttpClientResponse>,
+    predicate: Predicate<ClientResponse.HttpClientResponse>,
     orElse: (
       response: ClientResponse.HttpClientResponse,
     ) => Effect.Effect<ClientResponse.HttpClientResponse, E2, R2>,
@@ -353,18 +253,15 @@ export const filterOrElse: {
 
 /**
  * Filters the result of a response, or throws an error if the predicate fails.
- *
- * @since 1.0.0
- * @category filters
  */
 export const filterOrFail: {
   <E2>(
-    predicate: Predicate.Predicate<ClientResponse.HttpClientResponse>,
+    predicate: Predicate<ClientResponse.HttpClientResponse>,
     orFailWith: (response: ClientResponse.HttpClientResponse) => E2,
   ): <E, R>(self: BunHttpClient.With<E, R>) => BunHttpClient.With<E2 | E, R>;
   <E, R, E2>(
     self: BunHttpClient.With<E, R>,
-    predicate: Predicate.Predicate<ClientResponse.HttpClientResponse>,
+    predicate: Predicate<ClientResponse.HttpClientResponse>,
     orFailWith: (response: ClientResponse.HttpClientResponse) => E2,
   ): BunHttpClient.With<E2 | E, R>;
 } = internal.filterOrFail;
@@ -564,40 +461,32 @@ export declare namespace Retry {
     E,
     O extends NoExcessProperties<Effect.Retry.Options<E>, O>,
   > = BunHttpClient.With<
-    | (O extends { schedule: Schedule.Schedule<infer _O, infer _I, infer _R> }
+    | (O extends { schedule: Schedule<infer _O, infer _I, infer _R> }
         ? E
         : O extends { until: Predicate.Refinement<E, infer E2> }
           ? E2
           : E)
     | (O extends {
-        while: (
-          ...args: Array<any>
-        ) => Effect.Effect<infer _A, infer E, infer _R>;
+        while: (...args: any[]) => Effect.Effect<infer _A, infer E, infer _R>;
       }
         ? E
         : never)
     | (O extends {
-        until: (
-          ...args: Array<any>
-        ) => Effect.Effect<infer _A, infer E, infer _R>;
+        until: (...args: any[]) => Effect.Effect<infer _A, infer E, infer _R>;
       }
         ? E
         : never),
     | R
-    | (O extends { schedule: Schedule.Schedule<infer _O, infer _I, infer R> }
+    | (O extends { schedule: Schedule<infer _O, infer _I, infer R> }
         ? R
         : never)
     | (O extends {
-        while: (
-          ...args: Array<any>
-        ) => Effect.Effect<infer _A, infer _E, infer R>;
+        while: (...args: any[]) => Effect.Effect<infer _A, infer _E, infer R>;
       }
         ? R
         : never)
     | (O extends {
-        until: (
-          ...args: Array<any>
-        ) => Effect.Effect<infer _A, infer _E, infer R>;
+        until: (...args: any[]) => Effect.Effect<infer _A, infer _E, infer R>;
       }
         ? R
         : never)
@@ -617,7 +506,7 @@ export const retry: {
     options: O,
   ): <R>(self: BunHttpClient.With<E, R>) => Retry.Return<R, E, O>;
   <B, E, R1>(
-    policy: Schedule.Schedule<B, NoInfer<E>, R1>,
+    policy: Schedule<B, NoInfer<E>, R1>,
   ): <R>(self: BunHttpClient.With<E, R>) => BunHttpClient.With<E, R1 | R>;
   <E, R, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
     self: BunHttpClient.With<E, R>,
@@ -625,7 +514,7 @@ export const retry: {
   ): Retry.Return<R, E, O>;
   <E, R, B, R1>(
     self: BunHttpClient.With<E, R>,
-    policy: Schedule.Schedule<B, E, R1>,
+    policy: Schedule<B, E, R1>,
   ): BunHttpClient.With<E, R1 | R>;
 } = internal.retry;
 
@@ -642,21 +531,21 @@ export const retryTransient: {
   <B, E, R1 = never>(
     options:
       | {
-          readonly while?: Predicate.Predicate<NoInfer<E>>;
-          readonly schedule?: Schedule.Schedule<B, NoInfer<E>, R1>;
+          readonly while?: Predicate<NoInfer<E>>;
+          readonly schedule?: Schedule<B, NoInfer<E>, R1>;
           readonly times?: number;
         }
-      | Schedule.Schedule<B, NoInfer<E>, R1>,
+      | Schedule<B, NoInfer<E>, R1>,
   ): <R>(self: BunHttpClient.With<E, R>) => BunHttpClient.With<E, R1 | R>;
   <E, R, B, R1 = never>(
     self: BunHttpClient.With<E, R>,
     options:
       | {
-          readonly while?: Predicate.Predicate<NoInfer<E>>;
-          readonly schedule?: Schedule.Schedule<B, NoInfer<E>, R1>;
+          readonly while?: Predicate<NoInfer<E>>;
+          readonly schedule?: Schedule<B, NoInfer<E>, R1>;
           readonly times?: number;
         }
-      | Schedule.Schedule<B, NoInfer<E>, R1>,
+      | Schedule<B, NoInfer<E>, R1>,
   ): BunHttpClient.With<E, R1 | R>;
 } = internal.retryTransient;
 
@@ -752,8 +641,8 @@ export const followRedirects: {
  * @since 1.0.0
  * @category Tracing
  */
-export const currentTracerDisabledWhen: FiberRef.FiberRef<
-  Predicate.Predicate<BunHttpClientRequest.HttpClientRequest>
+export const currentTracerDisabledWhen: FiberRef<
+  Predicate<BunHttpClientRequest.HttpClientRequest>
 > = internal.currentTracerDisabledWhen;
 
 /**
@@ -764,11 +653,11 @@ export const currentTracerDisabledWhen: FiberRef.FiberRef<
  */
 export const withTracerDisabledWhen: {
   (
-    predicate: Predicate.Predicate<BunHttpClientRequest.HttpClientRequest>,
+    predicate: Predicate<BunHttpClientRequest.HttpClientRequest>,
   ): <E, R>(self: BunHttpClient.With<E, R>) => BunHttpClient.With<E, R>;
   <E, R>(
     self: BunHttpClient.With<E, R>,
-    predicate: Predicate.Predicate<BunHttpClientRequest.HttpClientRequest>,
+    predicate: Predicate<BunHttpClientRequest.HttpClientRequest>,
   ): BunHttpClient.With<E, R>;
 } = internal.withTracerDisabledWhen;
 
@@ -776,7 +665,7 @@ export const withTracerDisabledWhen: {
  * @since 1.0.0
  * @category Tracing
  */
-export const currentTracerPropagation: FiberRef.FiberRef<boolean> =
+export const currentTracerPropagation: FiberRef<boolean> =
   internal.currentTracerPropagation;
 
 /**

@@ -2,9 +2,8 @@ import { FetchHttpClient } from "@effect/platform";
 import { Effect, Layer } from "effect";
 import geoIp from "geoip-lite";
 
-import { GeoIpNotFoundError } from "./worker/error";
-import { getProxyUrl } from "./worker/proxy";
-import { GeoIpService } from "./worker/service";
+import { GeoIpNotFoundError } from "./worker/error.ts";
+import { GeoIpService } from "./worker/service.ts";
 
 export const BunFetchLive = FetchHttpClient.layer.pipe(
   Layer.provide(
@@ -21,7 +20,6 @@ export const BunFetchLive = FetchHttpClient.layer.pipe(
     //   return args;
     // }),
     Layer.succeed(FetchHttpClient.Fetch, (...args) => {
-      console.log(args);
       return fetch(...args);
     }),
   ),

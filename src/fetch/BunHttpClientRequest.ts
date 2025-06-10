@@ -6,7 +6,7 @@ import type {
 } from "@effect/platform";
 import type * as PlatformError from "@effect/platform/Error";
 
-import * as internal from "./internal/httpBunClientRequest";
+import * as internal from "./internal/httpBunClientRequest.ts";
 
 import type {
   HttpClientRequest as BaseHttpClientRequest,

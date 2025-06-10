@@ -1,12 +1,12 @@
 import { Effect, Random } from "effect";
 
 export const shuffleArray = <A>(
-  array: ReadonlyArray<A>,
-): Effect.Effect<ReadonlyArray<A>> => {
+  array: readonly A[],
+): Effect.Effect<readonly A[]> => {
   const shuffleOnce = (
-    arr: ReadonlyArray<A>,
+    arr: readonly A[],
     index: number,
-  ): Effect.Effect<ReadonlyArray<A>> =>
+  ): Effect.Effect<readonly A[]> =>
     Random.nextIntBetween(index, arr.length).pipe(
       Effect.map((j) => {
         const mutable = [...arr];

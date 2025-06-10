@@ -1,7 +1,3 @@
-import * as Effect from "effect/Effect";
-import * as FiberRef from "effect/FiberRef";
-import * as Stream from "effect/Stream";
-
 import {
   Headers,
   HttpClient,
@@ -10,6 +6,7 @@ import {
 } from "@effect/platform";
 
 import { type BodyInit, fetch as bunFetch } from "bun";
+import { Effect, FiberRef, Stream } from "effect";
 
 /** @internal */
 export const fetchTagKey = "@effect-app/BunFetchHttpClient/BunFetch";
@@ -55,7 +52,6 @@ export const fetch: HttpClient.HttpClient = HttpClient.make(
     switch (request.body._tag) {
       case "Raw":
       case "Uint8Array":
-        // @ts-ignore
         return send(request.body.body as any);
       case "FormData":
         return send(request.body.formData);
@@ -64,8 +60,9 @@ export const fetch: HttpClient.HttpClient = HttpClient.make(
           Stream.toReadableStreamEffect(request.body.stream),
           send,
         );
+      default:
+        return send(undefined);
     }
-    return send(undefined);
   },
 );
 

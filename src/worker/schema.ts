@@ -2,10 +2,10 @@ import { ParseResult, Schema } from "effect";
 
 import { isIPv4, isIPv6 } from "node:net";
 
-const isValidIP = (s: string): boolean => isIPv4(s) || isIPv6(s);
+const isValidIp = (s: string): boolean => isIPv4(s) || isIPv6(s);
 
-const IPField = Schema.String.pipe(
-  Schema.filter(isValidIP, { message: () => "Invalid IPv4 or IPv6 address" }),
+const ipField = Schema.String.pipe(
+  Schema.filter(isValidIp, { message: () => "Invalid IPv4 or IPv6 address" }),
 );
 
 const IpFromString = Schema.transformOrFail(
@@ -14,7 +14,7 @@ const IpFromString = Schema.transformOrFail(
   {
     strict: true,
     decode: (input, _, ast) => {
-      if (isValidIP(input)) {
+      if (isValidIp(input)) {
         return ParseResult.succeed(input);
       }
 
@@ -28,7 +28,7 @@ const IpFromString = Schema.transformOrFail(
         return fail;
       }
 
-      if (!isValidIP(rawIp)) {
+      if (!isValidIp(rawIp)) {
         return fail;
       }
 
@@ -40,12 +40,12 @@ const IpFromString = Schema.transformOrFail(
 );
 
 export const IPInfoResponse = Schema.Struct({
-  YourFuckingIPAddress: Schema.optional(IPField),
-  origin: Schema.optional(IPField),
-  IP: Schema.optional(IPField),
-  ip: Schema.optional(IPField),
-  remote_addr: Schema.optional(IPField),
-  raw: Schema.optional(IPField),
+  YourFuckingIPAddress: Schema.optional(ipField),
+  origin: Schema.optional(ipField),
+  IP: Schema.optional(ipField),
+  ip: Schema.optional(ipField),
+  remote_addr: Schema.optional(ipField),
+  raw: Schema.optional(ipField),
 });
 
 export const IPInfoResponseUnion = Schema.Union(IPInfoResponse, IpFromString);
