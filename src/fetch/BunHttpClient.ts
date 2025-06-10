@@ -447,7 +447,7 @@ export declare namespace BunHttpClientRetry {
    * @since 1.0.0
    * @category error handling
    */
-  export type Return<
+  export type BunHttpClientRetryReturn<
     R,
     E,
     O extends NoExcessProperties<Effect.Retry.Options<E>, O>,
@@ -495,14 +495,16 @@ export declare namespace BunHttpClientRetry {
 export const retry: {
   <E, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
     options: O,
-  ): <R>(self: BunHttpClientWith<E, R>) => BunHttpClientRetry.Return<R, E, O>;
+  ): <R>(
+    self: BunHttpClientWith<E, R>,
+  ) => BunHttpClientRetry.BunHttpClientRetryReturn<R, E, O>;
   <B, E, R1>(
     policy: Schedule<B, NoInfer<E>, R1>,
   ): <R>(self: BunHttpClientWith<E, R>) => BunHttpClientWith<E, R1 | R>;
   <E, R, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
     self: BunHttpClientWith<E, R>,
     options: O,
-  ): BunHttpClientRetry.Return<R, E, O>;
+  ): BunHttpClientRetry.BunHttpClientRetryReturn<R, E, O>;
   <E, R, B, R1>(
     self: BunHttpClientWith<E, R>,
     policy: Schedule<B, E, R1>,
