@@ -26,20 +26,27 @@ export class IpInfo extends Effect.Service<IpInfo>()("IpInfo", {
     );
 
     const getMyIp = (url: string) =>
-      client.get(url).pipe(
-        Effect.flatMap((response) =>
-          Effect.gen(function* () {
-            const isJson =
-              response.headers["content-type"]?.includes("application/json") ??
-              false;
+      client
+        .get(url, {
+          urlParams: {
+            test: "test",
+          },
+        })
+        .pipe(
+          Effect.flatMap((response) =>
+            Effect.gen(function* () {
+              const isJson =
+                response.headers["content-type"]?.includes(
+                  "application/json",
+                ) ?? false;
 
-            return yield* Schema.decodeUnknown(IPInfoResponseUnion)(
-              isJson ? yield* response.json : yield* response.text,
-            );
-          }),
-        ),
-        Effect.mapError(() => new IpServicesFailedError()),
-      );
+              return yield* Schema.decodeUnknown(IPInfoResponseUnion)(
+                isJson ? yield* response.json : yield* response.text,
+              );
+            }),
+          ),
+          Effect.mapError(() => new IpServicesFailedError()),
+        );
 
     return { getMyIp } as const;
   }),

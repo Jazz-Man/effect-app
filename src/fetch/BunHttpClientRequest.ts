@@ -14,32 +14,38 @@ import type {
 } from "@effect/platform/HttpClientRequest";
 
 import type { HttpMethod } from "@effect/platform/HttpMethod";
+
 import type { Effect, Option, Schema, Stream } from "effect";
 import type { Redacted } from "effect/Redacted";
 import type { ParseOptions } from "effect/SchemaAST";
 
 export const TypeId: unique symbol = Symbol.for(
-  "@effect-app/BunHttpClientRequest",
+  "@effect/platform/BunHttpClientRequest",
 );
 
 export type TypeId = typeof TypeId;
 
-export interface HttpClientRequest extends BaseHttpClientRequest {
+export type BunOnlyFetchOptionsPure = Omit<
+  BunFetchRequestInit,
+  keyof RequestInit
+>;
+
+type BunOnlyFetchOptionsReadonly = Readonly<BunOnlyFetchOptionsPure>;
+
+export interface HttpClientRequest
+  extends BaseHttpClientRequest,
+    BunOnlyFetchOptionsReadonly {
   readonly [TypeId]: TypeId;
 }
 
-export interface Options extends HttpClientRequestOption {
-  readonly tls: BunFetchRequestInitTLS | undefined;
-  readonly verbose: boolean | undefined;
-  readonly proxy: string | undefined;
-  readonly s3: Bun.S3Options | undefined;
-  readonly unix: string | undefined;
-}
+export interface BunOptions
+  extends HttpClientRequestOption,
+    BunOnlyFetchOptionsReadonly {}
 
-export declare namespace Options {
-  export interface NoBody extends Omit<Options, "method" | "url" | "body"> {}
+export declare namespace BunOptions {
+  export interface NoBody extends Omit<BunOptions, "method" | "url" | "body"> {}
 
-  export interface NoUrl extends Omit<Options, "method" | "url"> {}
+  export interface NoUrl extends Omit<BunOptions, "method" | "url"> {}
 }
 
 export const make: <M extends HttpMethod>(
@@ -47,54 +53,79 @@ export const make: <M extends HttpMethod>(
 ) => (
   url: string | URL,
   options?:
-    | (M extends "GET" | "HEAD" ? Options.NoBody : Options.NoUrl)
+    | (M extends "GET" | "HEAD" ? BunOptions.NoBody : BunOptions.NoUrl)
     | undefined,
 ) => HttpClientRequest = internal.make;
 
 export const get: (
   url: string | URL,
-  options?: Options.NoBody,
+  options?: BunOptions.NoBody,
 ) => HttpClientRequest = internal.get;
 
 export const post: (
   url: string | URL,
-  options?: Options.NoUrl,
+  options?: BunOptions.NoUrl,
 ) => HttpClientRequest = internal.post;
 
 export const patch: (
   url: string | URL,
-  options?: Options.NoUrl,
+  options?: BunOptions.NoUrl,
 ) => HttpClientRequest = internal.patch;
 
 export const put: (
   url: string | URL,
-  options?: Options.NoUrl,
+  options?: BunOptions.NoUrl,
 ) => HttpClientRequest = internal.put;
 
 export const del: (
   url: string | URL,
-  options?: Options.NoUrl,
+  options?: BunOptions.NoUrl,
 ) => HttpClientRequest = internal.del;
 
 export const head: (
   url: string | URL,
-  options?: Options.NoBody,
+  options?: BunOptions.NoBody,
 ) => HttpClientRequest = internal.head;
 
 export const options: (
   url: string | URL,
-  options?: Options.NoUrl,
+  options?: BunOptions.NoUrl,
 ) => HttpClientRequest = internal.options;
 
 export const modify: {
-  (options: Options): (self: HttpClientRequest) => HttpClientRequest;
-  (self: HttpClientRequest, options: Options): HttpClientRequest;
+  (options: BunOptions): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, options: BunOptions): HttpClientRequest;
 } = internal.modify;
 
 export const setMethod: {
   (method: HttpMethod): (self: HttpClientRequest) => HttpClientRequest;
   (self: HttpClientRequest, method: HttpMethod): HttpClientRequest;
 } = internal.setMethod;
+
+export const setVerbose: {
+  (verbose: boolean): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, verbose: boolean): HttpClientRequest;
+} = internal.setVerbose;
+
+export const setProxy: {
+  (proxy: string): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, proxy: string): HttpClientRequest;
+} = internal.setProxy;
+
+export const setTls: {
+  (tls: BunFetchRequestInitTLS): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, tls: BunFetchRequestInitTLS): HttpClientRequest;
+} = internal.setTls;
+
+export const setS3: {
+  (s3: Bun.S3Options): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, s3: Bun.S3Options): HttpClientRequest;
+} = internal.setS3;
+
+export const setUnix: {
+  (unix: string): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, unix: string): HttpClientRequest;
+} = internal.setUnix;
 
 export const setHeader: {
   (key: string, value: string): (self: HttpClientRequest) => HttpClientRequest;
