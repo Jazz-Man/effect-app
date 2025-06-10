@@ -12,6 +12,8 @@ import type { Cookies } from "@effect/platform/Cookies";
 import type { Layer } from "effect/Layer";
 
 import type { FiberRef } from "effect/FiberRef";
+import type { Inspectable } from "effect/Inspectable";
+import type { Pipeable } from "effect/Pipeable";
 import type { Predicate } from "effect/Predicate";
 import type { Ref } from "effect/Ref";
 import type { Schedule } from "effect/Schedule";
