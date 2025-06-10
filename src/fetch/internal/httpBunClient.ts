@@ -61,12 +61,12 @@ export const withTracerDisabledWhen = dual<
   (
     predicate: Predicate.Predicate<BunHttpClientRequest.HttpClientRequest>,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E, R>,
   <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     predicate: Predicate.Predicate<BunHttpClientRequest.HttpClientRequest>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>
+  ) => BunHttpClient.BunHttpClientWith<E, R>
 >(2, (self, pred) =>
   transformResponse(self, Effect.locally(currentTracerDisabledWhen, pred)),
 );
@@ -82,12 +82,12 @@ export const withTracerPropagation = dual<
   (
     enabled: boolean,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E, R>,
   <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     enabled: boolean,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>
+  ) => BunHttpClient.BunHttpClientWith<E, R>
 >(2, (self, enabled) =>
   transformResponse(self, Effect.locally(currentTracerPropagation, enabled)),
 );
@@ -107,12 +107,12 @@ export const withSpanNameGenerator = dual<
   (
     f: (request: BunHttpClientRequest.HttpClientRequest) => string,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E, R>,
   <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (request: BunHttpClientRequest.HttpClientRequest) => string,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>
+  ) => BunHttpClient.BunHttpClientWith<E, R>
 >(2, (self, f) =>
   transformResponse(self, Effect.provideService(SpanNameGenerator, f)),
 );
@@ -181,19 +181,12 @@ const ClientProto = {
 
 const isClient = (
   u: unknown,
-): u is BunHttpClient.BunHttpClient.BunHttpClientWith<unknown, unknown> =>
+): u is BunHttpClient.BunHttpClientWith<unknown, unknown> =>
   Predicate.hasProperty(u, TypeId);
 
-interface HttpClientImpl<E, R>
-  extends BunHttpClient.BunHttpClient.BunHttpClientWith<E, R> {
-  readonly preprocess: BunHttpClient.BunHttpClient.BunHttpClientPreprocess<
-    E,
-    R
-  >;
-  readonly postprocess: BunHttpClient.BunHttpClient.BunHttpClientPostprocess<
-    E,
-    R
-  >;
+interface HttpClientImpl<E, R> extends BunHttpClient.BunHttpClientWith<E, R> {
+  readonly preprocess: BunHttpClient.BunHttpClientPreprocess<E, R>;
+  readonly postprocess: BunHttpClient.BunHttpClientPostprocess<E, R>;
 }
 
 /** @internal */
@@ -201,8 +194,8 @@ export const makeWith = <E2, R2, E, R>(
   postprocess: (
     request: Effect.Effect<BunHttpClientRequest.HttpClientRequest, E2, R2>,
   ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
-  preprocess: BunHttpClient.BunHttpClient.BunHttpClientPreprocess<E2, R2>,
-): BunHttpClient.BunHttpClient.BunHttpClientWith<E, R> => {
+  preprocess: BunHttpClient.BunHttpClientPreprocess<E2, R2>,
+): BunHttpClient.BunHttpClientWith<E, R> => {
   const self = Object.create(ClientProto);
   self.preprocess = preprocess;
   self.postprocess = postprocess;
@@ -404,10 +397,7 @@ export const make = (
           );
         }),
       ),
-    Effect.succeed as BunHttpClient.BunHttpClient.BunHttpClientPreprocess<
-      never,
-      never
-    >,
+    Effect.succeed as BunHttpClient.BunHttpClientPreprocess<never, never>,
   );
 
 class InterruptibleResponse implements HttpClientResponse.HttpClientResponse {
@@ -495,8 +485,8 @@ class InterruptibleResponse implements HttpClientResponse.HttpClientResponse {
 
 /** @internal */
 export const withScope = <E, R>(
-  self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-): BunHttpClient.BunHttpClient.BunHttpClientWith<E, R | Scope.Scope> =>
+  self: BunHttpClient.BunHttpClientWith<E, R>,
+): BunHttpClient.BunHttpClientWith<E, R | Scope.Scope> =>
   transform(self, (effect, request) => {
     const controller = new AbortController();
     scopedRequests.set(request, controller);
@@ -538,15 +528,15 @@ export const transform = dual<
       request: BunHttpClientRequest.HttpClientRequest,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ) => (
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E1, R | R1>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E | E1, R | R1>,
   <E, R, E1, R1>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
       effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
       request: BunHttpClientRequest.HttpClientRequest,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E1, R | R1>
+  ) => BunHttpClient.BunHttpClientWith<E | E1, R | R1>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(
@@ -562,29 +552,21 @@ export const filterStatus = dual<
   (
     f: (status: number) => boolean,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<
-    E | HttpClientError.ResponseError,
-    R
-  >,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E | HttpClientError.ResponseError, R>,
   <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (status: number) => boolean,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<
-    E | HttpClientError.ResponseError,
-    R
-  >
+  ) => BunHttpClient.BunHttpClientWith<E | HttpClientError.ResponseError, R>
 >(2, (self, f) =>
   transformResponse(self, Effect.flatMap(HttpClientResponse.filterStatus(f))),
 );
 
 /** @internal */
 export const filterStatusOk = <E, R>(
-  self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-): BunHttpClient.BunHttpClient.BunHttpClientWith<
-  E | HttpClientError.ResponseError,
-  R
-> => transformResponse(self, Effect.flatMap(HttpClientResponse.filterStatusOk));
+  self: BunHttpClient.BunHttpClientWith<E, R>,
+): BunHttpClient.BunHttpClientWith<E | HttpClientError.ResponseError, R> =>
+  transformResponse(self, Effect.flatMap(HttpClientResponse.filterStatusOk));
 
 /** @internal */
 export const transformResponse = dual<
@@ -593,14 +575,14 @@ export const transformResponse = dual<
       effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ) => (
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E1, R1>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E1, R1>,
   <E, R, E1, R1>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
       effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E1, R1>
+  ) => BunHttpClient.BunHttpClientWith<E1, R1>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(
@@ -617,33 +599,25 @@ export const catchTag: {
       e: Extract<E, { _tag: K }>,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ): <R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<
-    E1 | Exclude<E, { _tag: K }>,
-    R1 | R
-  >;
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E1 | Exclude<E, { _tag: K }>, R1 | R>;
   <R, E, K extends E extends { _tag: string } ? E["_tag"] : never, R1, E1>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     tag: K,
     f: (
       e: Extract<E, { _tag: K }>,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<
-    E1 | Exclude<E, { _tag: K }>,
-    R1 | R
-  >;
+  ): BunHttpClient.BunHttpClientWith<E1 | Exclude<E, { _tag: K }>, R1 | R>;
 } = dual(
   3,
   <R, E, K extends E extends { _tag: string } ? E["_tag"] : never, R1, E1>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     tag: K,
     f: (
       e: Extract<E, { _tag: K }>,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<
-    E1 | Exclude<E, { _tag: K }>,
-    R1 | R
-  > => transformResponse(self, Effect.catchTag(tag, f)),
+  ): BunHttpClient.BunHttpClientWith<E1 | Exclude<E, { _tag: K }>, R1 | R> =>
+    transformResponse(self, Effect.catchTag(tag, f)),
 );
 
 /** @internal */
@@ -665,8 +639,8 @@ export const catchTags: {
   >(
     cases: Cases,
   ): <R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<
     | Exclude<E, { _tag: keyof Cases }>
     | {
         [K in keyof Cases]: Cases[K] extends (
@@ -700,9 +674,9 @@ export const catchTags: {
           >]: never;
         }),
   >(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     cases: Cases,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<
+  ): BunHttpClient.BunHttpClientWith<
     | Exclude<E, { _tag: keyof Cases }>
     | {
         [K in keyof Cases]: Cases[K] extends (
@@ -738,9 +712,9 @@ export const catchTags: {
           >]: never;
         }),
   >(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     cases: Cases,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<
+  ): BunHttpClient.BunHttpClientWith<
     | Exclude<E, { _tag: keyof Cases }>
     | {
         [K in keyof Cases]: Cases[K] extends (
@@ -765,18 +739,18 @@ export const catchAll: {
   <E, E2, R2>(
     f: (e: E) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
   ): <R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E2, R | R2>;
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E2, R | R2>;
   <E, R, E2, R2>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (e: E) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<E2, R | R2>;
+  ): BunHttpClient.BunHttpClientWith<E2, R | R2>;
 } = dual(
   2,
   <E, R, E2, R2>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (e: E) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<E2, R | R2> =>
+  ): BunHttpClient.BunHttpClientWith<E2, R | R2> =>
     transformResponse(self, Effect.catchAll(f)),
 );
 
@@ -788,15 +762,15 @@ export const filterOrElse: {
       response: HttpClientResponse.HttpClientResponse,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
   ): <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E2 | E, R2 | R>;
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E2 | E, R2 | R>;
   <E, R, E2, R2>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
     orElse: (
       response: HttpClientResponse.HttpClientResponse,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<E2 | E, R2 | R>;
+  ): BunHttpClient.BunHttpClientWith<E2 | E, R2 | R>;
 } = dual(3, (self, f, orElse) =>
   transformResponse(self, Effect.filterOrElse(f, orElse)),
 );
@@ -807,13 +781,13 @@ export const filterOrFail: {
     predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
     orFailWith: (response: HttpClientResponse.HttpClientResponse) => E2,
   ): <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E2 | E, R>;
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E2 | E, R>;
   <E, R, E2>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
     orFailWith: (response: HttpClientResponse.HttpClientResponse) => E2,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<E2 | E, R>;
+  ): BunHttpClient.BunHttpClientWith<E2 | E, R>;
 } = dual(3, (self, f, orFailWith) =>
   transformResponse(self, Effect.filterOrFail(f, orFailWith)),
 );
@@ -825,14 +799,14 @@ export const mapRequest = dual<
       a: BunHttpClientRequest.HttpClientRequest,
     ) => BunHttpClientRequest.HttpClientRequest,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E, R>,
   <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
       a: BunHttpClientRequest.HttpClientRequest,
     ) => BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>
+  ) => BunHttpClient.BunHttpClientWith<E, R>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(client.postprocess, (request) =>
@@ -847,14 +821,14 @@ export const mapRequestEffect = dual<
       a: BunHttpClientRequest.HttpClientRequest,
     ) => Effect.Effect<BunHttpClientRequest.HttpClientRequest, E2, R2>,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
   <E, R, E2, R2>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
       a: BunHttpClientRequest.HttpClientRequest,
     ) => Effect.Effect<BunHttpClientRequest.HttpClientRequest, E2, R2>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E2, R | R2>
+  ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(client.postprocess as any, (request) =>
@@ -869,14 +843,14 @@ export const mapRequestInput = dual<
       a: BunHttpClientRequest.HttpClientRequest,
     ) => BunHttpClientRequest.HttpClientRequest,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E, R>,
   <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
       a: BunHttpClientRequest.HttpClientRequest,
     ) => BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>
+  ) => BunHttpClient.BunHttpClientWith<E, R>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(client.postprocess, (request) =>
@@ -891,14 +865,14 @@ export const mapRequestInputEffect = dual<
       a: BunHttpClientRequest.HttpClientRequest,
     ) => Effect.Effect<BunHttpClientRequest.HttpClientRequest, E2, R2>,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
   <E, R, E2, R2>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
       a: BunHttpClientRequest.HttpClientRequest,
     ) => Effect.Effect<BunHttpClientRequest.HttpClientRequest, E2, R2>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E2, R | R2>
+  ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(client.postprocess as any, (request) =>
@@ -911,27 +885,27 @@ export const retry: {
   <E, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
     options: O,
   ): <R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
   ) => BunHttpClient.Retry.Return<R, E, O>;
   <B, E, R1>(
     policy: Schedule.Schedule<B, NoInfer<E>, R1>,
   ): <R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R1 | R>;
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E, R1 | R>;
   <E, R, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     options: O,
   ): BunHttpClient.Retry.Return<R, E, O>;
   <E, R, B, R1>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     policy: Schedule.Schedule<B, E, R1>,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<E, R1 | R>;
+  ): BunHttpClient.BunHttpClientWith<E, R1 | R>;
 } = dual(
   2,
   <E extends E0, E0, R, R1, B>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     policy: Schedule.Schedule<B, E0, R1>,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<E, R | R1> =>
+  ): BunHttpClient.BunHttpClientWith<E, R | R1> =>
     transformResponse(self, Effect.retry(policy)),
 );
 
@@ -946,10 +920,10 @@ export const retryTransient: {
         }
       | Schedule.Schedule<B, NoInfer<E>, R1>,
   ): <R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R1 | R>;
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E, R1 | R>;
   <E, R, B, R1 = never>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     options:
       | {
           readonly while?: Predicate.Predicate<NoInfer<E>>;
@@ -957,11 +931,11 @@ export const retryTransient: {
           readonly times?: number;
         }
       | Schedule.Schedule<B, NoInfer<E>, R1>,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<E, R1 | R>;
+  ): BunHttpClient.BunHttpClientWith<E, R1 | R>;
 } = dual(
   2,
   <E extends E0, E0, R, B, R1 = never>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     options:
       | {
           readonly while?: Predicate.Predicate<NoInfer<E>>;
@@ -969,7 +943,7 @@ export const retryTransient: {
           readonly times?: number;
         }
       | Schedule.Schedule<B, NoInfer<E>, R1>,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<E, R | R1> =>
+  ): BunHttpClient.BunHttpClientWith<E, R | R1> =>
     transformResponse(
       self,
       Effect.retry({
@@ -1000,14 +974,14 @@ export const tap = dual<
       response: HttpClientResponse.HttpClientResponse,
     ) => Effect.Effect<_, E2, R2>,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
   <E, R, _, E2, R2>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
       response: HttpClientResponse.HttpClientResponse,
     ) => Effect.Effect<_, E2, R2>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E2, R | R2>
+  ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>
 >(2, (self, f) => transformResponse(self, Effect.tap(f)));
 
 /** @internal */
@@ -1015,12 +989,12 @@ export const tapError = dual<
   <_, E, E2, R2>(
     f: (e: NoInfer<E>) => Effect.Effect<_, E2, R2>,
   ) => <R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
   <E, R, _, E2, R2>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (e: NoInfer<E>) => Effect.Effect<_, E2, R2>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E2, R | R2>
+  ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>
 >(2, (self, f) => transformResponse(self, Effect.tapError(f)));
 
 /** @internal */
@@ -1028,12 +1002,12 @@ export const tapRequest = dual<
   <_, E2, R2>(
     f: (a: BunHttpClientRequest.HttpClientRequest) => Effect.Effect<_, E2, R2>,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
   <E, R, _, E2, R2>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (a: BunHttpClientRequest.HttpClientRequest) => Effect.Effect<_, E2, R2>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E | E2, R | R2>
+  ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
   return makeWith(client.postprocess as any, (request) =>
@@ -1046,18 +1020,18 @@ export const withCookiesRef = dual<
   (
     ref: Ref.Ref<Cookies.Cookies>,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E, R>,
   <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     ref: Ref.Ref<Cookies.Cookies>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>
+  ) => BunHttpClient.BunHttpClientWith<E, R>
 >(
   2,
   <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     ref: Ref.Ref<Cookies.Cookies>,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<E, R> => {
+  ): BunHttpClient.BunHttpClientWith<E, R> => {
     const client = self as HttpClientImpl<E, R>;
     return makeWith(
       (request: Effect.Effect<BunHttpClientRequest.HttpClientRequest, E, R>) =>
@@ -1087,18 +1061,18 @@ export const followRedirects = dual<
   (
     maxRedirects?: number | undefined,
   ) => <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
+  ) => BunHttpClient.BunHttpClientWith<E, R>,
   <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     maxRedirects?: number | undefined,
-  ) => BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>
+  ) => BunHttpClient.BunHttpClientWith<E, R>
 >(
   (args) => isClient(args[0]),
   <E, R>(
-    self: BunHttpClient.BunHttpClient.BunHttpClientWith<E, R>,
+    self: BunHttpClient.BunHttpClientWith<E, R>,
     maxRedirects?: number | undefined,
-  ): BunHttpClient.BunHttpClient.BunHttpClientWith<E, R> => {
+  ): BunHttpClient.BunHttpClientWith<E, R> => {
     const client = self as HttpClientImpl<E, R>;
     return makeWith((request) => {
       const loop = (
