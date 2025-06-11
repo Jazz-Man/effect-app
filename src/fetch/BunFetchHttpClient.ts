@@ -1,8 +1,8 @@
-import type { HttpClient } from "@effect/platform/HttpClient";
 import { Context, type Layer } from "effect";
 
 import type { fetch as bunFetch } from "bun";
 
+import type { BunHttpClient } from "./BunHttpClient.ts";
 import {
   fetchTagKey,
   layer as internalLayer,
@@ -11,9 +11,9 @@ import {
 
 export class Fetch extends Context.Tag(fetchTagKey)<Fetch, typeof bunFetch>() {}
 
-export class RequestInit extends Context.Tag(requestInitTagKey)<
-  RequestInit,
+export class BunFetchRequestInit extends Context.Tag(requestInitTagKey)<
+  BunFetchRequestInit,
   globalThis.BunFetchRequestInit
 >() {}
 
-export const layer: Layer.Layer<HttpClient> = internalLayer;
+export const layer: Layer.Layer<BunHttpClient> = internalLayer;
