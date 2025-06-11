@@ -1,4 +1,4 @@
-import { Effect, Random } from "effect";
+import { Effect } from "effect";
 
 // Effect.runPromise(getPublicIP.pipe(Effect.provide(AppServices)))
 //   .then((result) => {
@@ -11,7 +11,3 @@ import { Effect, Random } from "effect";
 const program = Effect.gen(function* () {});
 
 Effect.runSync(program);
-
-const override = program.pipe(Effect.withRandom(Random.make("myseed")));
-
-Effect.runSync(override);

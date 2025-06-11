@@ -2,9 +2,9 @@ import { Context, Effect, Schema } from "effect";
 
 import type { Lookup } from "geoip-lite";
 
-import { FetchHttpClient, HttpClient } from "@effect/platform";
-
-import { type GeoIpNotFoundError, IpServicesFailedError } from "./error.ts";
+import { BunFetchHttpClient, BunHttpClient } from "../fetch/index.ts";
+import { type GeoIpNotFoundError, IpIsUndefinedError } from "./error.ts";
+import { getProxyUrl } from "./proxy.ts";
 import { IpInfoResponseUnion } from "./schema.ts";
 
 export type TGeoIPParam = string | number;
@@ -20,16 +20,18 @@ export class GeoIpService extends Context.Tag("GeoIpService")<
 
 export class IpInfo extends Effect.Service<IpInfo>()("IpInfo", {
   effect: Effect.gen(function* () {
-    const client = (yield* HttpClient.HttpClient).pipe(
-      HttpClient.filterStatusOk,
-      HttpClient.followRedirects,
+    const client = (yield* BunHttpClient.HttpClient).pipe(
+      BunHttpClient.filterStatusOk,
+      BunHttpClient.followRedirects(2),
     );
 
-    const getMyIp = (url: string) =>
+    const getMyIp = (url: string, proxy: string = getProxyUrl()) =>
       client
         .get(url, {
-          urlParams: {
-            test: "test",
+          verbose: true,
+          proxy,
+          headers: {
+            "User-Agent": "curl/8.7.1",
           },
         })
         .pipe(
@@ -40,15 +42,28 @@ export class IpInfo extends Effect.Service<IpInfo>()("IpInfo", {
                   "application/json",
                 ) ?? false;
 
-              return yield* Schema.decodeUnknown(IpInfoResponseUnion)(
-                isJson ? yield* response.json : yield* response.text,
-              );
+              const result = isJson
+                ? yield* response.json
+                : { raw: (yield* response.text).trim() };
+
+              const data =
+                yield* Schema.decodeUnknown(IpInfoResponseUnion)(result);
+
+              console.log({ res: data.toString() });
+
+              const ip = Object.values(data).at(0);
+
+              if (!ip) {
+                throw new IpIsUndefinedError();
+              }
+
+              return ip;
             }),
           ),
-          Effect.mapError(() => new IpServicesFailedError()),
+          // Effect.mapError(() => new IpServicesFailedError()),
         );
 
     return { getMyIp } as const;
   }),
-  dependencies: [FetchHttpClient.layer],
+  dependencies: [BunFetchHttpClient.layer],
 }) {}

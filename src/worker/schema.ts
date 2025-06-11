@@ -1,11 +1,9 @@
 import { ParseResult, Schema } from "effect";
 
-import { isIPv4, isIPv6 } from "node:net";
-
-const isValidIp = (s: string): boolean => isIPv4(s) || isIPv6(s);
+import { isIPv4 } from "node:net";
 
 const ipField = Schema.String.pipe(
-  Schema.filter(isValidIp, { message: () => "Invalid IPv4 or IPv6 address" }),
+  Schema.filter(isIPv4, { message: () => "Invalid IPv4 address" }),
 );
 
 const IpFromString = Schema.transformOrFail(
@@ -14,7 +12,7 @@ const IpFromString = Schema.transformOrFail(
   {
     strict: true,
     decode: (input, _, ast) => {
-      if (isValidIp(input)) {
+      if (isIPv4(input)) {
         return ParseResult.succeed(input);
       }
 
@@ -28,7 +26,7 @@ const IpFromString = Schema.transformOrFail(
         return fail;
       }
 
-      if (!isValidIp(rawIp)) {
+      if (!isIPv4(rawIp)) {
         return fail;
       }
 
@@ -39,8 +37,7 @@ const IpFromString = Schema.transformOrFail(
   },
 );
 
-export const IpInfoResponse = Schema.Struct({
-  YourFuckingIPAddress: Schema.optional(ipField),
+const IpInfoResponse = Schema.Struct({
   origin: Schema.optional(ipField),
   IP: Schema.optional(ipField),
   ip: Schema.optional(ipField),

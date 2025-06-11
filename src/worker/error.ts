@@ -11,3 +11,7 @@ export class IpServicesNotAvailableError extends Data.TaggedError(
 export class IpServicesFailedError extends Data.TaggedError(
   "IpServicesFailedError",
 ) {}
+
+export class IpIsUndefinedError extends Data.TaggedError(
+  "IpIsUndefinedError",
+) {}

@@ -1,6 +1,6 @@
 const ipServices = [
-  "https://wtfismyip.com/json",
-  "https://myip.wtf/json",
+  "https://wtfismyip.com/text",
+  "https://myip.wtf/text",
   "https://api.my-ip.io/v2/ip.json",
   "https://check.torproject.org/api/ip",
   "https://httpbin.org/ip",
@@ -8,7 +8,7 @@ const ipServices = [
   "https://iphorse.com/json",
   "https://ipapi.co/json",
   "https://api.ip2location.io",
-  "https://ifconfig.co/json",
+  "https://ifconfig.co",
   "https://ipaddr.site",
   "https://checkip.amazonaws.com",
   "https://ident.me",
