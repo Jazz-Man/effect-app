@@ -22,7 +22,7 @@
   "devDependencies": {
     "@effect/language-service": "^0.18.0",
     "@tsconfig/bun": "^1.0.8",
-    "@types/bun": "^1.2.15",
+    "@types/bun": "^1.2.16",
     "@types/geoip-lite": "^1.4.4",
     "typescript": "^5.8.3"
   }
