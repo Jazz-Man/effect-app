@@ -52,20 +52,20 @@ export const currentTracerDisabledWhen = globalValue(
   Symbol.for("@effect/platform/BunHttpClient/tracerDisabledWhen"),
   () =>
     FiberRef.unsafeMake<
-      Predicate.Predicate<BunHttpClientRequest.HttpClientRequest>
+      Predicate.Predicate<BunHttpClientRequest.BunHttpClientRequest>
     >(constFalse),
 );
 
 /** @internal */
 export const withTracerDisabledWhen = dual<
   (
-    predicate: Predicate.Predicate<BunHttpClientRequest.HttpClientRequest>,
+    predicate: Predicate.Predicate<BunHttpClientRequest.BunHttpClientRequest>,
   ) => <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
   ) => BunHttpClient.BunHttpClientWith<E, R>,
   <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
-    predicate: Predicate.Predicate<BunHttpClientRequest.HttpClientRequest>,
+    predicate: Predicate.Predicate<BunHttpClientRequest.BunHttpClientRequest>,
   ) => BunHttpClient.BunHttpClientWith<E, R>
 >(2, (self, pred) =>
   transformResponse(self, Effect.locally(currentTracerDisabledWhen, pred)),
@@ -97,7 +97,7 @@ export const SpanNameGenerator =
   Context.Reference<BunHttpClient.SpanNameGenerator>()(
     "@effect/platform/BunHttpClient/SpanNameGenerator",
     {
-      defaultValue: () => (request: BunHttpClientRequest.HttpClientRequest) =>
+      defaultValue: () => (request: BunHttpClientRequest.BunHttpClientRequest) =>
         `http.client ${request.method}`,
     },
   );
@@ -105,13 +105,13 @@ export const SpanNameGenerator =
 /** @internal */
 export const withSpanNameGenerator = dual<
   (
-    f: (request: BunHttpClientRequest.HttpClientRequest) => string,
+    f: (request: BunHttpClientRequest.BunHttpClientRequest) => string,
   ) => <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
   ) => BunHttpClient.BunHttpClientWith<E, R>,
   <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
-    f: (request: BunHttpClientRequest.HttpClientRequest) => string,
+    f: (request: BunHttpClientRequest.BunHttpClientRequest) => string,
   ) => BunHttpClient.BunHttpClientWith<E, R>
 >(2, (self, f) =>
   transformResponse(self, Effect.provideService(SpanNameGenerator, f)),
@@ -133,49 +133,49 @@ const ClientProto = {
   get(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.BunOptionsNoBody,
+    options?: BunHttpClientRequest.BunOptionsNoBody,
   ) {
     return this.execute(internalRequest.get(url, options));
   },
   head(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.BunOptionsNoBody,
+    options?: BunHttpClientRequest.BunOptionsNoBody,
   ) {
     return this.execute(internalRequest.head(url, options));
   },
   post(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
+    options: BunHttpClientRequest.BunOptionsNoUrl,
   ) {
     return this.execute(internalRequest.post(url, options));
   },
   put(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
+    options: BunHttpClientRequest.BunOptionsNoUrl,
   ) {
     return this.execute(internalRequest.put(url, options));
   },
   patch(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
+    options: BunHttpClientRequest.BunOptionsNoUrl,
   ) {
     return this.execute(internalRequest.patch(url, options));
   },
   del(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
+    options?: BunHttpClientRequest.BunOptionsNoUrl,
   ) {
     return this.execute(internalRequest.del(url, options));
   },
   options(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.BunOptionsNoBody,
+    options?: BunHttpClientRequest.BunOptionsNoBody,
   ) {
     return this.execute(internalRequest.options(url, options));
   },
@@ -194,14 +194,14 @@ interface HttpClientImpl<E, R> extends BunHttpClient.BunHttpClientWith<E, R> {
 /** @internal */
 export const makeWith = <E2, R2, E, R>(
   postprocess: (
-    request: Effect.Effect<BunHttpClientRequest.HttpClientRequest, E2, R2>,
+    request: Effect.Effect<BunHttpClientRequest.BunHttpClientRequest, E2, R2>,
   ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
   preprocess: BunHttpClient.BunHttpClientPreprocess<E2, R2>,
 ): BunHttpClient.BunHttpClientWith<E, R> => {
   const self = Object.create(ClientProto);
   self.preprocess = preprocess;
   self.postprocess = postprocess;
-  self.execute = (request: BunHttpClientRequest.HttpClientRequest) =>
+  self.execute = (request: BunHttpClientRequest.BunHttpClientRequest) =>
     postprocess(preprocess(request));
   return self;
 };
@@ -256,13 +256,13 @@ const responseRegistry = globalValue(
 
 const scopedRequests = globalValue(
   "@effect/platform/BunHttpClient/scopedRequests",
-  () => new WeakMap<BunHttpClientRequest.HttpClientRequest, AbortController>(),
+  () => new WeakMap<BunHttpClientRequest.BunHttpClientRequest, AbortController>(),
 );
 
 /** @internal */
 export const make = (
   f: (
-    request: BunHttpClientRequest.HttpClientRequest,
+    request: BunHttpClientRequest.BunHttpClientRequest,
     url: URL,
     signal: AbortSignal,
     fiber: Fiber.RuntimeFiber<
@@ -530,7 +530,7 @@ export const transform = dual<
   <E, R, E1, R1>(
     f: (
       effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
-      request: BunHttpClientRequest.HttpClientRequest,
+      request: BunHttpClientRequest.BunHttpClientRequest,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ) => (
     self: BunHttpClient.BunHttpClientWith<E, R>,
@@ -539,7 +539,7 @@ export const transform = dual<
     self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
       effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
-      request: BunHttpClientRequest.HttpClientRequest,
+      request: BunHttpClientRequest.BunHttpClientRequest,
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>,
   ) => BunHttpClient.BunHttpClientWith<E | E1, R | R1>
 >(2, (self, f) => {
@@ -804,16 +804,16 @@ export const filterOrFail: {
 export const mapRequest = dual<
   (
     f: (
-      a: BunHttpClientRequest.HttpClientRequest,
-    ) => BunHttpClientRequest.HttpClientRequest,
+      a: BunHttpClientRequest.BunHttpClientRequest,
+    ) => BunHttpClientRequest.BunHttpClientRequest,
   ) => <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
   ) => BunHttpClient.BunHttpClientWith<E, R>,
   <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
-      a: BunHttpClientRequest.HttpClientRequest,
-    ) => BunHttpClientRequest.HttpClientRequest,
+      a: BunHttpClientRequest.BunHttpClientRequest,
+    ) => BunHttpClientRequest.BunHttpClientRequest,
   ) => BunHttpClient.BunHttpClientWith<E, R>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
@@ -826,16 +826,16 @@ export const mapRequest = dual<
 export const mapRequestEffect = dual<
   <E2, R2>(
     f: (
-      a: BunHttpClientRequest.HttpClientRequest,
-    ) => Effect.Effect<BunHttpClientRequest.HttpClientRequest, E2, R2>,
+      a: BunHttpClientRequest.BunHttpClientRequest,
+    ) => Effect.Effect<BunHttpClientRequest.BunHttpClientRequest, E2, R2>,
   ) => <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
   ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
   <E, R, E2, R2>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
-      a: BunHttpClientRequest.HttpClientRequest,
-    ) => Effect.Effect<BunHttpClientRequest.HttpClientRequest, E2, R2>,
+      a: BunHttpClientRequest.BunHttpClientRequest,
+    ) => Effect.Effect<BunHttpClientRequest.BunHttpClientRequest, E2, R2>,
   ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
@@ -848,16 +848,16 @@ export const mapRequestEffect = dual<
 export const mapRequestInput = dual<
   (
     f: (
-      a: BunHttpClientRequest.HttpClientRequest,
-    ) => BunHttpClientRequest.HttpClientRequest,
+      a: BunHttpClientRequest.BunHttpClientRequest,
+    ) => BunHttpClientRequest.BunHttpClientRequest,
   ) => <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
   ) => BunHttpClient.BunHttpClientWith<E, R>,
   <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
-      a: BunHttpClientRequest.HttpClientRequest,
-    ) => BunHttpClientRequest.HttpClientRequest,
+      a: BunHttpClientRequest.BunHttpClientRequest,
+    ) => BunHttpClientRequest.BunHttpClientRequest,
   ) => BunHttpClient.BunHttpClientWith<E, R>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
@@ -870,16 +870,16 @@ export const mapRequestInput = dual<
 export const mapRequestInputEffect = dual<
   <E2, R2>(
     f: (
-      a: BunHttpClientRequest.HttpClientRequest,
-    ) => Effect.Effect<BunHttpClientRequest.HttpClientRequest, E2, R2>,
+      a: BunHttpClientRequest.BunHttpClientRequest,
+    ) => Effect.Effect<BunHttpClientRequest.BunHttpClientRequest, E2, R2>,
   ) => <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
   ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
   <E, R, E2, R2>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
     f: (
-      a: BunHttpClientRequest.HttpClientRequest,
-    ) => Effect.Effect<BunHttpClientRequest.HttpClientRequest, E2, R2>,
+      a: BunHttpClientRequest.BunHttpClientRequest,
+    ) => Effect.Effect<BunHttpClientRequest.BunHttpClientRequest, E2, R2>,
   ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
@@ -1008,13 +1008,13 @@ export const tapError = dual<
 /** @internal */
 export const tapRequest = dual<
   <_, E2, R2>(
-    f: (a: BunHttpClientRequest.HttpClientRequest) => Effect.Effect<_, E2, R2>,
+    f: (a: BunHttpClientRequest.BunHttpClientRequest) => Effect.Effect<_, E2, R2>,
   ) => <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
   ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
   <E, R, _, E2, R2>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
-    f: (a: BunHttpClientRequest.HttpClientRequest) => Effect.Effect<_, E2, R2>,
+    f: (a: BunHttpClientRequest.BunHttpClientRequest) => Effect.Effect<_, E2, R2>,
   ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
@@ -1042,7 +1042,7 @@ export const withCookiesRef = dual<
   ): BunHttpClient.BunHttpClientWith<E, R> => {
     const client = self as HttpClientImpl<E, R>;
     return makeWith(
-      (request: Effect.Effect<BunHttpClientRequest.HttpClientRequest, E, R>) =>
+      (request: Effect.Effect<BunHttpClientRequest.BunHttpClientRequest, E, R>) =>
         Effect.tap(client.postprocess(request), (response) =>
           Ref.update(ref, (cookies) =>
             Cookies.merge(cookies, response.cookies),
@@ -1084,7 +1084,7 @@ export const followRedirects = dual<
     const client = self as HttpClientImpl<E, R>;
     return makeWith((request) => {
       const loop = (
-        request: BunHttpClientRequest.HttpClientRequest,
+        request: BunHttpClientRequest.BunHttpClientRequest,
         redirects: number,
       ): Effect.Effect<HttpClientResponse.HttpClientResponse, E, R> =>
         Effect.flatMap(

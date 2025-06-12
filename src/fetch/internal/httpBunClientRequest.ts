@@ -14,28 +14,29 @@ import {
 
 import type { ParseOptions } from "effect/SchemaAST";
 
-import type * as BunHttpClientRequest from "../BunHttpClientRequest.tsx";
-
 import {
-  HttpBody as Body,
   type FileSystem,
   Headers,
-  type HttpBody,
+  HttpBody,
   type Error as PlatformError,
   UrlParams,
 } from "@effect/platform";
 import type { HttpMethod } from "@effect/platform/HttpMethod";
+import type { BunHttpClientRequest } from "..";
+import type { BunTypeId } from "../BunHttpClientRequest.ts";
+
+type RequestType = BunHttpClientRequest.BunHttpClientRequest;
 
 /** @internal */
-export const TypeId: BunHttpClientRequest.TypeId = Symbol.for(
-  "@effect/platform/HttpClientRequest",
-) as BunHttpClientRequest.TypeId;
+export const TypeId: BunTypeId = Symbol.for(
+  "@effect/platform/BunHttpClientRequest",
+) as BunTypeId;
 
 const Proto = {
   [TypeId]: TypeId,
   ...Inspectable.BaseProto,
   // biome-ignore lint/style/useNamingConvention: <explanation>
-  toJSON(this: BunHttpClientRequest.HttpClientRequest): unknown {
+  toJSON(this: RequestType): unknown {
     return {
       _id: "@effect/platform/HttpClientRequest",
       method: this.method,
@@ -68,7 +69,7 @@ function makeInternal(
   proxy: string | undefined,
   s3: Bun.S3Options | undefined,
   unix: string | undefined,
-): BunHttpClientRequest.HttpClientRequest {
+): RequestType {
   const self = Object.create(Proto);
   self.method = method;
   self.url = url;
@@ -85,19 +86,17 @@ function makeInternal(
 }
 
 /** @internal */
-export const isClientRequest = (
-  u: unknown,
-): u is BunHttpClientRequest.HttpClientRequest =>
+export const isClientRequest = (u: unknown): u is RequestType =>
   typeof u === "object" && u !== null && TypeId in u;
 
 /** @internal */
-export const empty: BunHttpClientRequest.HttpClientRequest = makeInternal(
+export const empty: RequestType = makeInternal(
   "GET",
   "",
   UrlParams.empty,
   Option.none(),
   Headers.empty,
-  Body.empty,
+  HttpBody.empty,
   undefined,
   undefined,
   undefined,
@@ -111,8 +110,8 @@ export const make =
   (
     url: string | URL,
     options?: M extends "GET" | "HEAD"
-      ? BunHttpClientRequest.BunOptions.BunOptionsNoBody
-      : BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
+      ? BunHttpClientRequest.BunOptionsNoBody
+      : BunHttpClientRequest.BunOptionsNoUrl,
   ) =>
     modify(empty, {
       method,
@@ -145,13 +144,8 @@ export const options = make("OPTIONS");
 export const modify = dual<
   (
     options: BunHttpClientRequest.BunOptions,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    options: BunHttpClientRequest.BunOptions,
-  ) => BunHttpClientRequest.HttpClientRequest
+  ) => (self: RequestType) => RequestType,
+  (self: RequestType, options: BunHttpClientRequest.BunOptions) => RequestType
 >(2, (self, options) => {
   let result = self;
 
@@ -205,15 +199,8 @@ export const modify = dual<
 
 /** @internal */
 export const setVerbose = dual<
-  (
-    value: boolean,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    value: boolean,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (value: boolean) => (self: RequestType) => RequestType,
+  (self: RequestType, value: boolean) => RequestType
 >(2, (self, verbose) =>
   makeInternal(
     self.method,
@@ -232,17 +219,8 @@ export const setVerbose = dual<
 
 /** @internal */
 export const setHeader = dual<
-  (
-    key: string,
-    value: string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    key: string,
-    value: string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (key: string, value: string) => (self: RequestType) => RequestType,
+  (self: RequestType, key: string, value: string) => RequestType
 >(3, (self, key, value) =>
   makeInternal(
     self.method,
@@ -261,15 +239,8 @@ export const setHeader = dual<
 
 /** @internal */
 export const setHeaders = dual<
-  (
-    input: Headers.Input,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    input: Headers.Input,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (input: Headers.Input) => (self: RequestType) => RequestType,
+  (self: RequestType, input: Headers.Input) => RequestType
 >(2, (self, input) =>
   makeInternal(
     self.method,
@@ -294,14 +265,12 @@ export const basicAuth = dual<
   (
     username: string | Redacted.Redacted,
     password: string | Redacted.Redacted,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
+  ) => (self: RequestType) => RequestType,
   (
-    self: BunHttpClientRequest.HttpClientRequest,
+    self: RequestType,
     username: string | Redacted.Redacted,
     password: string | Redacted.Redacted,
-  ) => BunHttpClientRequest.HttpClientRequest
+  ) => RequestType
 >(3, (self, username, password) =>
   setHeader(
     self,
@@ -312,43 +281,22 @@ export const basicAuth = dual<
 
 /** @internal */
 export const bearerToken = dual<
-  (
-    token: string | Redacted.Redacted,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    token: string | Redacted.Redacted,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (token: string | Redacted.Redacted) => (self: RequestType) => RequestType,
+  (self: RequestType, token: string | Redacted.Redacted) => RequestType
 >(2, (self, token) =>
   setHeader(self, "Authorization", `Bearer ${stringOrRedacted(token)}`),
 );
 
 /** @internal */
 export const accept = dual<
-  (
-    mediaType: string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    mediaType: string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (mediaType: string) => (self: RequestType) => RequestType,
+  (self: RequestType, mediaType: string) => RequestType
 >(2, (self, mediaType) => setHeader(self, "Accept", mediaType));
 
 /** @internal */
 export const setTls = dual<
-  (
-    tls: BunFetchRequestInitTLS,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    tls: BunFetchRequestInitTLS,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (tls: BunFetchRequestInitTLS) => (self: RequestType) => RequestType,
+  (self: RequestType, tls: BunFetchRequestInitTLS) => RequestType
 >(2, (self, tls) =>
   makeInternal(
     self.method,
@@ -367,15 +315,8 @@ export const setTls = dual<
 
 /** @internal */
 export const setS3 = dual<
-  (
-    s3: Bun.S3Options,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    s3: Bun.S3Options,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (s3: Bun.S3Options) => (self: RequestType) => RequestType,
+  (self: RequestType, s3: Bun.S3Options) => RequestType
 >(2, (self, s3) =>
   makeInternal(
     self.method,
@@ -394,15 +335,8 @@ export const setS3 = dual<
 
 /** @internal */
 export const setUnix = dual<
-  (
-    unix: string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    unix: string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (unix: string) => (self: RequestType) => RequestType,
+  (self: RequestType, unix: string) => RequestType
 >(2, (self, unix) =>
   makeInternal(
     self.method,
@@ -421,15 +355,8 @@ export const setUnix = dual<
 
 /** @internal */
 export const setProxy = dual<
-  (
-    proxy: string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    proxy: string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (proxy: string) => (self: RequestType) => RequestType,
+  (self: RequestType, proxy: string) => RequestType
 >(2, (self, proxy) =>
   makeInternal(
     self.method,
@@ -451,15 +378,8 @@ export const acceptJson = accept("application/json");
 
 /** @internal */
 export const setMethod = dual<
-  (
-    method: HttpMethod,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    method: HttpMethod,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (method: HttpMethod) => (self: RequestType) => RequestType,
+  (self: RequestType, method: HttpMethod) => RequestType
 >(2, (self, method) =>
   makeInternal(
     method,
@@ -478,15 +398,8 @@ export const setMethod = dual<
 
 /** @internal */
 export const setUrl = dual<
-  (
-    url: string | URL,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    url: string | URL,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (url: string | URL) => (self: RequestType) => RequestType,
+  (self: RequestType, url: string | URL) => RequestType
 >(2, (self, url) => {
   if (typeof url === "string") {
     return makeInternal(
@@ -525,15 +438,8 @@ export const setUrl = dual<
 
 /** @internal */
 export const appendUrl = dual<
-  (
-    path: string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    path: string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (path: string) => (self: RequestType) => RequestType,
+  (self: RequestType, path: string) => RequestType
 >(2, (self, url) =>
   makeInternal(
     self.method,
@@ -554,15 +460,8 @@ export const appendUrl = dual<
 
 /** @internal */
 export const prependUrl = dual<
-  (
-    path: string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    path: string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (path: string) => (self: RequestType) => RequestType,
+  (self: RequestType, path: string) => RequestType
 >(2, (self, url) =>
   makeInternal(
     self.method,
@@ -583,15 +482,8 @@ export const prependUrl = dual<
 
 /** @internal */
 export const updateUrl = dual<
-  (
-    f: (url: string) => string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    f: (url: string) => string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (f: (url: string) => string) => (self: RequestType) => RequestType,
+  (self: RequestType, f: (url: string) => string) => RequestType
 >(2, (self, f) =>
   makeInternal(
     self.method,
@@ -610,17 +502,8 @@ export const updateUrl = dual<
 
 /** @internal */
 export const appendUrlParam = dual<
-  (
-    key: string,
-    value: string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    key: string,
-    value: string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (key: string, value: string) => (self: RequestType) => RequestType,
+  (self: RequestType, key: string, value: string) => RequestType
 >(3, (self, key, value) =>
   makeInternal(
     self.method,
@@ -639,15 +522,8 @@ export const appendUrlParam = dual<
 
 /** @internal */
 export const appendUrlParams = dual<
-  (
-    input: UrlParams.Input,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    input: UrlParams.Input,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (input: UrlParams.Input) => (self: RequestType) => RequestType,
+  (self: RequestType, input: UrlParams.Input) => RequestType
 >(2, (self, input) =>
   makeInternal(
     self.method,
@@ -666,17 +542,8 @@ export const appendUrlParams = dual<
 
 /** @internal */
 export const setUrlParam = dual<
-  (
-    key: string,
-    value: string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    key: string,
-    value: string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (key: string, value: string) => (self: RequestType) => RequestType,
+  (self: RequestType, key: string, value: string) => RequestType
 >(3, (self, key, value) =>
   makeInternal(
     self.method,
@@ -695,15 +562,8 @@ export const setUrlParam = dual<
 
 /** @internal */
 export const setUrlParams = dual<
-  (
-    input: UrlParams.Input,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    input: UrlParams.Input,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (input: UrlParams.Input) => (self: RequestType) => RequestType,
+  (self: RequestType, input: UrlParams.Input) => RequestType
 >(2, (self, input) =>
   makeInternal(
     self.method,
@@ -722,15 +582,8 @@ export const setUrlParams = dual<
 
 /** @internal */
 export const setHash = dual<
-  (
-    hash: string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    hash: string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (hash: string) => (self: RequestType) => RequestType,
+  (self: RequestType, hash: string) => RequestType
 >(2, (self, hash) =>
   makeInternal(
     self.method,
@@ -748,9 +601,7 @@ export const setHash = dual<
 );
 
 /** @internal */
-export const removeHash = (
-  self: BunHttpClientRequest.HttpClientRequest,
-): BunHttpClientRequest.HttpClientRequest =>
+export const removeHash = (self: RequestType): RequestType =>
   makeInternal(
     self.method,
     self.url,
@@ -766,22 +617,13 @@ export const removeHash = (
   );
 
 /** @internal */
-export const toUrl = (
-  self: BunHttpClientRequest.HttpClientRequest,
-): Option.Option<URL> =>
+export const toUrl = (self: RequestType): Option.Option<URL> =>
   Either.getRight(UrlParams.makeUrl(self.url, self.urlParams, self.hash));
 
 /** @internal */
 export const setBody = dual<
-  (
-    body: HttpBody.HttpBody,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    body: HttpBody.HttpBody,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (body: HttpBody.HttpBody) => (self: RequestType) => RequestType,
+  (self: RequestType, body: HttpBody.HttpBody) => RequestType
 >(2, (self, body) => {
   let headers = self.headers;
   if (body._tag === "Empty" || body._tag === "FormData") {
@@ -821,37 +663,22 @@ export const bodyUint8Array = dual<
   (
     body: Uint8Array,
     contentType?: string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    body: Uint8Array,
-    contentType?: string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  ) => (self: RequestType) => RequestType,
+  (self: RequestType, body: Uint8Array, contentType?: string) => RequestType
 >(
   (args) => isClientRequest(args[0]),
   (self, body, contentType = "application/octet-stream") =>
-    setBody(self, Body.uint8Array(body, contentType)),
+    setBody(self, HttpBody.uint8Array(body, contentType)),
 );
 
 /** @internal */
 export const bodyText = dual<
-  (
-    body: string,
-    contentType?: string,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    body: string,
-    contentType?: string,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (body: string, contentType?: string) => (self: RequestType) => RequestType,
+  (self: RequestType, body: string, contentType?: string) => RequestType
 >(
   (args) => isClientRequest(args[0]),
   (self, body, contentType = "text/plain") =>
-    setBody(self, Body.text(body, contentType)),
+    setBody(self, HttpBody.text(body, contentType)),
 );
 
 /** @internal */
@@ -859,34 +686,21 @@ export const bodyJson = dual<
   (
     body: unknown,
   ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => Effect.Effect<
-    BunHttpClientRequest.HttpClientRequest,
-    HttpBody.HttpBodyError
-  >,
+    self: RequestType,
+  ) => Effect.Effect<RequestType, HttpBody.HttpBodyError>,
   (
-    self: BunHttpClientRequest.HttpClientRequest,
+    self: RequestType,
     body: unknown,
-  ) => Effect.Effect<
-    BunHttpClientRequest.HttpClientRequest,
-    HttpBody.HttpBodyError
-  >
+  ) => Effect.Effect<RequestType, HttpBody.HttpBodyError>
 >(2, (self, body) =>
-  Effect.map(Body.json(body), (body) => setBody(self, body)),
+  Effect.map(HttpBody.json(body), (body) => setBody(self, body)),
 );
 
 /** @internal */
 export const bodyUnsafeJson = dual<
-  (
-    body: unknown,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    body: unknown,
-  ) => BunHttpClientRequest.HttpClientRequest
->(2, (self, body) => setBody(self, Body.unsafeJson(body)));
+  (body: unknown) => (self: RequestType) => RequestType,
+  (self: RequestType, body: unknown) => RequestType
+>(2, (self, body) => setBody(self, HttpBody.unsafeJson(body)));
 
 /** @internal */
 export const bodyFile = dual<
@@ -894,39 +708,32 @@ export const bodyFile = dual<
     path: string,
     options?: FileSystem.StreamOptions & { readonly contentType?: string },
   ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
+    self: RequestType,
   ) => Effect.Effect<
-    BunHttpClientRequest.HttpClientRequest,
+    RequestType,
     PlatformError.PlatformError,
     FileSystem.FileSystem
   >,
   (
-    self: BunHttpClientRequest.HttpClientRequest,
+    self: RequestType,
     path: string,
     options?: FileSystem.StreamOptions & { readonly contentType?: string },
   ) => Effect.Effect<
-    BunHttpClientRequest.HttpClientRequest,
+    RequestType,
     PlatformError.PlatformError,
     FileSystem.FileSystem
   >
 >(
   (args) => isClientRequest(args[0]),
   (self, path, options) =>
-    Effect.map(Body.file(path, options), (body) => setBody(self, body)),
+    Effect.map(HttpBody.file(path, options), (body) => setBody(self, body)),
 );
 
 /** @internal */
 export const bodyFileWeb = dual<
-  (
-    file: HttpBody.HttpBody.FileLike,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    file: HttpBody.HttpBody.FileLike,
-  ) => BunHttpClientRequest.HttpClientRequest
->(2, (self, file) => setBody(self, Body.fileWeb(file)));
+  (file: HttpBody.HttpBody.FileLike) => (self: RequestType) => RequestType,
+  (self: RequestType, file: HttpBody.HttpBody.FileLike) => RequestType
+>(2, (self, file) => setBody(self, HttpBody.fileWeb(file)));
 
 /** @internal */
 export const schemaBodyJson = <A, I, R>(
@@ -936,58 +743,35 @@ export const schemaBodyJson = <A, I, R>(
   (
     body: A,
   ): (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => Effect.Effect<
-    BunHttpClientRequest.HttpClientRequest,
-    HttpBody.HttpBodyError,
-    R
-  >;
+    self: RequestType,
+  ) => Effect.Effect<RequestType, HttpBody.HttpBodyError, R>;
   (
-    self: BunHttpClientRequest.HttpClientRequest,
+    self: RequestType,
     body: A,
-  ): Effect.Effect<
-    BunHttpClientRequest.HttpClientRequest,
-    HttpBody.HttpBodyError,
-    R
-  >;
+  ): Effect.Effect<RequestType, HttpBody.HttpBodyError, R>;
 } => {
-  const encode = Body.jsonSchema(schema, options);
+  const encode = HttpBody.jsonSchema(schema, options);
   return dual<
     (
       body: A,
     ) => (
-      self: BunHttpClientRequest.HttpClientRequest,
-    ) => Effect.Effect<
-      BunHttpClientRequest.HttpClientRequest,
-      HttpBody.HttpBodyError,
-      R
-    >,
+      self: RequestType,
+    ) => Effect.Effect<RequestType, HttpBody.HttpBodyError, R>,
     (
-      self: BunHttpClientRequest.HttpClientRequest,
+      self: RequestType,
       body: A,
-    ) => Effect.Effect<
-      BunHttpClientRequest.HttpClientRequest,
-      HttpBody.HttpBodyError,
-      R
-    >
+    ) => Effect.Effect<RequestType, HttpBody.HttpBodyError, R>
   >(2, (self, body) => Effect.map(encode(body), (body) => setBody(self, body)));
 };
 
 /** @internal */
 export const bodyUrlParams = dual<
-  (
-    input: UrlParams.Input,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    input: UrlParams.Input,
-  ) => BunHttpClientRequest.HttpClientRequest
+  (input: UrlParams.Input) => (self: RequestType) => RequestType,
+  (self: RequestType, input: UrlParams.Input) => RequestType
 >(2, (self, body) =>
   setBody(
     self,
-    Body.text(
+    HttpBody.text(
       UrlParams.toString(UrlParams.fromInput(body)),
       "application/x-www-form-urlencoded",
     ),
@@ -996,29 +780,15 @@ export const bodyUrlParams = dual<
 
 /** @internal */
 export const bodyFormData = dual<
-  (
-    body: FormData,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    body: FormData,
-  ) => BunHttpClientRequest.HttpClientRequest
->(2, (self, body) => setBody(self, Body.formData(body)));
+  (body: FormData) => (self: RequestType) => RequestType,
+  (self: RequestType, body: FormData) => RequestType
+>(2, (self, body) => setBody(self, HttpBody.formData(body)));
 
 /** @internal */
 export const bodyFormDataRecord = dual<
-  (
-    entries: HttpBody.FormDataInput,
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
-  (
-    self: BunHttpClientRequest.HttpClientRequest,
-    entries: HttpBody.FormDataInput,
-  ) => BunHttpClientRequest.HttpClientRequest
->(2, (self, entries) => setBody(self, Body.formDataRecord(entries)));
+  (entries: HttpBody.FormDataInput) => (self: RequestType) => RequestType,
+  (self: RequestType, entries: HttpBody.FormDataInput) => RequestType
+>(2, (self, entries) => setBody(self, HttpBody.formDataRecord(entries)));
 
 /** @internal */
 export const bodyStream = dual<
@@ -1028,22 +798,20 @@ export const bodyStream = dual<
       readonly contentType?: string | undefined;
       readonly contentLength?: number | undefined;
     },
-  ) => (
-    self: BunHttpClientRequest.HttpClientRequest,
-  ) => BunHttpClientRequest.HttpClientRequest,
+  ) => (self: RequestType) => RequestType,
   (
-    self: BunHttpClientRequest.HttpClientRequest,
+    self: RequestType,
     body: Stream.Stream<Uint8Array, unknown>,
     options?: {
       readonly contentType?: string | undefined;
       readonly contentLength?: number | undefined;
     },
-  ) => BunHttpClientRequest.HttpClientRequest
+  ) => RequestType
 >(
   (args) => isClientRequest(args[0]),
   (
     self,
     body,
     { contentLength, contentType = "application/octet-stream" } = {},
-  ) => setBody(self, Body.stream(body, contentType, contentLength)),
+  ) => setBody(self, HttpBody.stream(body, contentType, contentLength)),
 );
