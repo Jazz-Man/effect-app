@@ -34,6 +34,7 @@ export const TypeId: BunHttpClientRequest.TypeId = Symbol.for(
 const Proto = {
   [TypeId]: TypeId,
   ...Inspectable.BaseProto,
+  // biome-ignore lint/style/useNamingConvention: <explanation>
   toJSON(this: BunHttpClientRequest.HttpClientRequest): unknown {
     return {
       _id: "@effect/platform/HttpClientRequest",
@@ -110,8 +111,8 @@ export const make =
   (
     url: string | URL,
     options?: M extends "GET" | "HEAD"
-      ? BunHttpClientRequest.BunOptions.NoBody
-      : BunHttpClientRequest.BunOptions.NoUrl,
+      ? BunHttpClientRequest.BunOptions.BunOptionsNoBody
+      : BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
   ) =>
     modify(empty, {
       method,

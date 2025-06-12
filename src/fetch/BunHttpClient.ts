@@ -37,31 +37,31 @@ export interface BunHttpClientWith<E, R = never> extends Pipeable, Inspectable {
 
   readonly get: (
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.NoBody,
+    options?: BunHttpClientRequest.BunOptions.BunOptionsNoBody,
   ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly head: (
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.NoBody,
+    options?: BunHttpClientRequest.BunOptions.BunOptionsNoBody,
   ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly post: (
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.NoUrl,
+    options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
   ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly patch: (
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.NoUrl,
+    options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
   ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly put: (
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.NoUrl,
+    options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
   ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly del: (
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.NoUrl,
+    options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
   ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   readonly options: (
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.NoUrl,
+    options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
   ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
 }
 
@@ -91,37 +91,37 @@ export const execute: (
 
 export const get: (
   url: string | URL,
-  options?: BunHttpClientRequest.BunOptions.NoBody | undefined,
+  options?: BunHttpClientRequest.BunOptions.BunOptionsNoBody | undefined,
 ) => BunHttpClientResponseType = internal.get;
 
 export const head: (
   url: string | URL,
-  options?: BunHttpClientRequest.BunOptions.NoBody | undefined,
+  options?: BunHttpClientRequest.BunOptions.BunOptionsNoBody | undefined,
 ) => BunHttpClientResponseType = internal.head;
 
 export const post: (
   url: string | URL,
-  options?: BunHttpClientRequest.BunOptions.NoUrl | undefined,
+  options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl | undefined,
 ) => BunHttpClientResponseType = internal.post;
 
 export const patch: (
   url: string | URL,
-  options?: BunHttpClientRequest.BunOptions.NoUrl | undefined,
+  options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl | undefined,
 ) => BunHttpClientResponseType = internal.patch;
 
 export const put: (
   url: string | URL,
-  options?: BunHttpClientRequest.BunOptions.NoUrl | undefined,
+  options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl | undefined,
 ) => BunHttpClientResponseType = internal.put;
 
 export const del: (
   url: string | URL,
-  options?: BunHttpClientRequest.BunOptions.NoUrl | undefined,
+  options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl | undefined,
 ) => BunHttpClientResponseType = internal.del;
 
 export const options: (
   url: string | URL,
-  options?: BunHttpClientRequest.BunOptions.NoUrl | undefined,
+  options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl | undefined,
 ) => BunHttpClientResponseType = internal.options;
 
 export const catchAll: {
@@ -160,7 +160,8 @@ export const catchTags: {
         error: Extract<E, { _tag: K }>,
       ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
     } & (unknown extends E
-      ? {}
+      ? // biome-ignore lint/complexity/noBannedTypes: <explanation>
+        {}
       : {
           [K in Exclude<
             keyof Cases,
@@ -195,7 +196,8 @@ export const catchTags: {
         error: Extract<E, { _tag: K }>,
       ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
     } & (unknown extends E
-      ? {}
+      ? // biome-ignore lint/complexity/noBannedTypes: <explanation>
+        {}
       : {
           [K in Exclude<
             keyof Cases,

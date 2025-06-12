@@ -43,9 +43,10 @@ export interface BunOptions
     BunOnlyFetchOptionsReadonly {}
 
 export declare namespace BunOptions {
-  export interface NoBody extends Omit<BunOptions, "method" | "url" | "body"> {}
+  export interface BunOptionsNoBody
+    extends Omit<BunOptions, "method" | "url" | "body"> {}
 
-  export interface NoUrl extends Omit<BunOptions, "method" | "url"> {}
+  export interface BunOptionsNoUrl extends Omit<BunOptions, "method" | "url"> {}
 }
 
 export const make: <M extends HttpMethod>(
@@ -53,43 +54,45 @@ export const make: <M extends HttpMethod>(
 ) => (
   url: string | URL,
   options?:
-    | (M extends "GET" | "HEAD" ? BunOptions.NoBody : BunOptions.NoUrl)
+    | (M extends "GET" | "HEAD"
+        ? BunOptions.BunOptionsNoBody
+        : BunOptions.BunOptionsNoUrl)
     | undefined,
 ) => HttpClientRequest = internal.make;
 
 export const get: (
   url: string | URL,
-  options?: BunOptions.NoBody,
+  options?: BunOptions.BunOptionsNoBody,
 ) => HttpClientRequest = internal.get;
 
 export const post: (
   url: string | URL,
-  options?: BunOptions.NoUrl,
+  options?: BunOptions.BunOptionsNoUrl,
 ) => HttpClientRequest = internal.post;
 
 export const patch: (
   url: string | URL,
-  options?: BunOptions.NoUrl,
+  options?: BunOptions.BunOptionsNoUrl,
 ) => HttpClientRequest = internal.patch;
 
 export const put: (
   url: string | URL,
-  options?: BunOptions.NoUrl,
+  options?: BunOptions.BunOptionsNoUrl,
 ) => HttpClientRequest = internal.put;
 
 export const del: (
   url: string | URL,
-  options?: BunOptions.NoUrl,
+  options?: BunOptions.BunOptionsNoUrl,
 ) => HttpClientRequest = internal.del;
 
 export const head: (
   url: string | URL,
-  options?: BunOptions.NoBody,
+  options?: BunOptions.BunOptionsNoBody,
 ) => HttpClientRequest = internal.head;
 
 export const options: (
   url: string | URL,
-  options?: BunOptions.NoUrl,
+  options?: BunOptions.BunOptionsNoUrl,
 ) => HttpClientRequest = internal.options;
 
 export const modify: {

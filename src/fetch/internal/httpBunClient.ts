@@ -120,9 +120,11 @@ export const withSpanNameGenerator = dual<
 const ClientProto = {
   [TypeId]: TypeId,
   pipe() {
+    // biome-ignore lint/correctness/noUndeclaredVariables: <explanation>
     return pipeArguments(this, arguments);
   },
   ...Inspectable.BaseProto,
+  // biome-ignore lint/style/useNamingConvention: <explanation>
   toJSON() {
     return {
       _id: "@effect/platform/BunHttpClient",
@@ -131,49 +133,49 @@ const ClientProto = {
   get(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.NoBody,
+    options?: BunHttpClientRequest.BunOptions.BunOptionsNoBody,
   ) {
     return this.execute(internalRequest.get(url, options));
   },
   head(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.NoBody,
+    options?: BunHttpClientRequest.BunOptions.BunOptionsNoBody,
   ) {
     return this.execute(internalRequest.head(url, options));
   },
   post(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options: BunHttpClientRequest.BunOptions.NoUrl,
+    options: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
   ) {
     return this.execute(internalRequest.post(url, options));
   },
   put(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options: BunHttpClientRequest.BunOptions.NoUrl,
+    options: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
   ) {
     return this.execute(internalRequest.put(url, options));
   },
   patch(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options: BunHttpClientRequest.BunOptions.NoUrl,
+    options: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
   ) {
     return this.execute(internalRequest.patch(url, options));
   },
   del(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.NoUrl,
+    options?: BunHttpClientRequest.BunOptions.BunOptionsNoUrl,
   ) {
     return this.execute(internalRequest.del(url, options));
   },
   options(
     this: BunHttpClient.BunHttpClient,
     url: string | URL,
-    options?: BunHttpClientRequest.BunOptions.NoBody,
+    options?: BunHttpClientRequest.BunOptions.BunOptionsNoBody,
   ) {
     return this.execute(internalRequest.options(url, options));
   },
@@ -402,7 +404,9 @@ export const make = (
 
 class InterruptibleResponse implements HttpClientResponse.HttpClientResponse {
   constructor(
+    // biome-ignore lint/style/noParameterProperties: <explanation>
     readonly original: HttpClientResponse.HttpClientResponse,
+    // biome-ignore lint/style/noParameterProperties: <explanation>
     readonly controller: AbortController,
   ) {}
 
@@ -474,6 +478,7 @@ class InterruptibleResponse implements HttpClientResponse.HttpClientResponse {
     });
   }
 
+  // biome-ignore lint/style/useNamingConvention: <explanation>
   toJSON() {
     return this.original.toJSON();
   }
@@ -629,7 +634,8 @@ export const catchTags: {
         error: Extract<E, { _tag: K }>,
       ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
     } & (unknown extends E
-      ? {}
+      ? // biome-ignore lint/complexity/noBannedTypes: <explanation>
+        {}
       : {
           [K in Exclude<
             keyof Cases,
@@ -666,7 +672,8 @@ export const catchTags: {
         error: Extract<E, { _tag: K }>,
       ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
     } & (unknown extends E
-      ? {}
+      ? // biome-ignore lint/complexity/noBannedTypes: <explanation>
+        {}
       : {
           [K in Exclude<
             keyof Cases,
@@ -704,7 +711,8 @@ export const catchTags: {
         error: Extract<E, { _tag: K }>,
       ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
     } & (unknown extends E
-      ? {}
+      ? // biome-ignore lint/complexity/noBannedTypes: <explanation>
+        {}
       : {
           [K in Exclude<
             keyof Cases,
