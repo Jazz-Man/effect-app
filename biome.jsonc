@@ -9,6 +9,7 @@
     "ignoreUnknown": true,
     "ignore": []
   },
+
   "formatter": {
     "enabled": true,
     "indentStyle": "space"
@@ -34,6 +35,10 @@
     }
   },
   "javascript": {
+    "globals": ["BunFetchRequestInitTLS", "Bun", "BunFetchRequestInit"],
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "formatter": {
       "quoteStyle": "double"
     }
