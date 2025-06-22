@@ -1,6 +1,11 @@
-import { dual } from "effect/Function";
-
-import { pipeArguments } from "effect/Pipeable";
+import {
+  type FileSystem,
+  Headers,
+  HttpBody,
+  type Error as PlatformError,
+  UrlParams,
+} from "@effect/platform";
+import type { HttpMethod } from "@effect/platform/HttpMethod";
 
 import {
   Effect,
@@ -11,17 +16,9 @@ import {
   type Schema,
   type Stream,
 } from "effect";
-
+import { dual } from "effect/Function";
+import { pipeArguments } from "effect/Pipeable";
 import type { ParseOptions } from "effect/SchemaAST";
-
-import {
-  type FileSystem,
-  Headers,
-  HttpBody,
-  type Error as PlatformError,
-  UrlParams,
-} from "@effect/platform";
-import type { HttpMethod } from "@effect/platform/HttpMethod";
 import type { BunHttpClientRequest } from "..";
 import type { BunTypeId } from "../BunHttpClientRequest.ts";
 

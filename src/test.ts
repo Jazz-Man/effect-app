@@ -1,44 +1,32 @@
-import { Console, Effect } from "effect";
-import { getProxyUrl } from "./worker/proxy.ts";
-import { IpInfo } from "./worker/service.ts";
+import { BunRuntime } from "@effect/platform-bun";
+import { Console, Effect, Layer, Random } from "effect";
+import { IpServicesNotAvailableError } from "./worker/error.ts";
+import ipServices from "./worker/ipServices.ts";
+import { GeoInfo, IpInfo } from "./worker/service.ts";
 
 const program = Effect.gen(function* () {
   const ip = yield* IpInfo;
+  const geo = yield* GeoInfo;
+  const ipProviders = yield* Random.shuffle(ipServices);
 
-  const proxy = getProxyUrl();
+  const testList = ["https://api.ip2location.io"];
 
-  const data = yield* ip.getMyIp("https://wtfismyip.com/text", proxy);
+  const ipData = yield* Effect.firstSuccessOf(
+    testList.map((service) => ip.getMyIp(service)),
+    // A.fromIterable(ipProviders).map((service) => ip.getMyIp(service)),
+  ).pipe(Effect.catchAll(() => Effect.fail(new IpServicesNotAvailableError())));
 
-  console.log({ data, proxy });
+  const geoData = yield* geo.lookup(ipData.ip);
 
-  return data;
+  console.log({ ipData, geoData });
+
+  return { ipData, geoData };
 }).pipe(Effect.catchAllCause((cause) => Console.log(cause)));
 
-Effect.runFork(program.pipe(Effect.provide(IpInfo.Default)));
+export const AppServices = Layer.mergeAll(
+  IpInfo.Default,
+  GeoInfo.Default,
+  // BunContext.layer,
+);
 
-// const getPostAsJson = Effect.gen(function* () {
-//   const client = (yield* BunHttpClient.HttpClient).pipe(
-//     BunHttpClient.filterStatusOk,
-//     BunHttpClient.followRedirects(1),
-//   );
-
-//   const proxy = getProxyUrl();
-
-//   const response = yield* client.get("https://wtfismyip.com/text", {
-//     verbose: true,
-//     proxy,
-//     headers: {
-//       "User-Agent": "curl/8.7.1",
-//     },
-//   });
-
-//   const ipResul = yield* response.json;
-
-//   const res = { ip: Object.values(ipResul), proxy };
-//   return res;
-// }).pipe(Effect.provide(BunFetchHttpClient.layer));
-
-// getPostAsJson.pipe(
-//   Effect.andThen((post) => Console.log(post)),
-//   BunRuntime.runMain,
-// );
+BunRuntime.runMain(program.pipe(Effect.provide(AppServices)));

@@ -1,6 +1,5 @@
-import { ParseResult, Schema } from "effect";
-
 import { isIPv4 } from "node:net";
+import { ParseResult, Schema } from "effect";
 
 const ipField = Schema.String.pipe(
   Schema.filter(isIPv4, { message: () => "Invalid IPv4 address" }),
@@ -42,7 +41,7 @@ const IpInfoResponse = Schema.Struct({
   IP: Schema.optional(ipField),
   ip: Schema.optional(ipField),
   remote_addr: Schema.optional(ipField),
-  raw: Schema.optional(ipField),
+  raw: Schema.optional(IpFromString),
 });
 
 export const IpInfoResponseUnion = Schema.Union(IpInfoResponse, IpFromString);

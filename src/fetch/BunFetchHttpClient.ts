@@ -1,6 +1,5 @@
-import { Context, type Layer } from "effect";
-
 import type { fetch as bunFetch } from "bun";
+import { Context, type Layer } from "effect";
 
 import type { BunHttpClient } from "./BunHttpClient.ts";
 import {

@@ -21,7 +21,6 @@ const ipServices = [
   "https://ifconfig.es",
   "https://ipaddress.sh",
   "https://eth0.me",
-  "https://ipinfo.io/ip",
   "https://icanhazip.com",
   "https://ip.liquidweb.com",
   //  "https://ipaddy.net",

@@ -5,19 +5,15 @@ import type {
   UrlParams,
 } from "@effect/platform";
 import type * as PlatformError from "@effect/platform/Error";
-
-import * as internal from "./internal/httpBunClientRequest.ts";
-
 import type {
   HttpClientRequest as BaseHttpClientRequest,
   Options as HttpClientRequestOption,
 } from "@effect/platform/HttpClientRequest";
-
 import type { HttpMethod } from "@effect/platform/HttpMethod";
-
 import type { Effect, Option, Schema, Stream } from "effect";
 import type { Redacted } from "effect/Redacted";
 import type { ParseOptions } from "effect/SchemaAST";
+import * as internal from "./internal/httpBunClientRequest.ts";
 
 export const BunTypeId: unique symbol = Symbol.for(
   "@effect/platform/BunHttpClientRequest",

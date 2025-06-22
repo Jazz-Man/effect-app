@@ -1,4 +1,13 @@
 import {
+  Cookies,
+  Headers,
+  HttpClientError,
+  HttpClientResponse,
+  HttpIncomingMessage,
+  HttpTraceContext,
+  UrlParams,
+} from "@effect/platform";
+import {
   Cause,
   Context,
   Effect,
@@ -12,30 +21,15 @@ import {
   Scope,
   Stream,
 } from "effect";
-
 import type * as Fiber from "effect/Fiber";
-
 import { constFalse, dual } from "effect/Function";
 import { globalValue } from "effect/GlobalValue";
-
 import { pipeArguments } from "effect/Pipeable";
-
 import type { NoExcessProperties, NoInfer } from "effect/Types";
-
-import * as internalRequest from "./httpBunClientRequest.ts";
 
 import type * as BunHttpClient from "../BunHttpClient.tsx";
 import type * as BunHttpClientRequest from "../BunHttpClientRequest.tsx";
-
-import {
-  Cookies,
-  Headers,
-  HttpClientError,
-  HttpClientResponse,
-  HttpIncomingMessage,
-  HttpTraceContext,
-  UrlParams,
-} from "@effect/platform";
+import * as internalRequest from "./httpBunClientRequest.ts";
 
 /** @internal */
 export const TypeId: BunHttpClient.TypeId = Symbol.for(
@@ -97,8 +91,9 @@ export const SpanNameGenerator =
   Context.Reference<BunHttpClient.SpanNameGenerator>()(
     "@effect/platform/BunHttpClient/SpanNameGenerator",
     {
-      defaultValue: () => (request: BunHttpClientRequest.BunHttpClientRequest) =>
-        `http.client ${request.method}`,
+      defaultValue:
+        () => (request: BunHttpClientRequest.BunHttpClientRequest) =>
+          `http.client ${request.method}`,
     },
   );
 
@@ -256,7 +251,8 @@ const responseRegistry = globalValue(
 
 const scopedRequests = globalValue(
   "@effect/platform/BunHttpClient/scopedRequests",
-  () => new WeakMap<BunHttpClientRequest.BunHttpClientRequest, AbortController>(),
+  () =>
+    new WeakMap<BunHttpClientRequest.BunHttpClientRequest, AbortController>(),
 );
 
 /** @internal */
@@ -1008,13 +1004,17 @@ export const tapError = dual<
 /** @internal */
 export const tapRequest = dual<
   <_, E2, R2>(
-    f: (a: BunHttpClientRequest.BunHttpClientRequest) => Effect.Effect<_, E2, R2>,
+    f: (
+      a: BunHttpClientRequest.BunHttpClientRequest,
+    ) => Effect.Effect<_, E2, R2>,
   ) => <E, R>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
   ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>,
   <E, R, _, E2, R2>(
     self: BunHttpClient.BunHttpClientWith<E, R>,
-    f: (a: BunHttpClientRequest.BunHttpClientRequest) => Effect.Effect<_, E2, R2>,
+    f: (
+      a: BunHttpClientRequest.BunHttpClientRequest,
+    ) => Effect.Effect<_, E2, R2>,
   ) => BunHttpClient.BunHttpClientWith<E | E2, R | R2>
 >(2, (self, f) => {
   const client = self as HttpClientImpl<any, any>;
@@ -1042,7 +1042,9 @@ export const withCookiesRef = dual<
   ): BunHttpClient.BunHttpClientWith<E, R> => {
     const client = self as HttpClientImpl<E, R>;
     return makeWith(
-      (request: Effect.Effect<BunHttpClientRequest.BunHttpClientRequest, E, R>) =>
+      (
+        request: Effect.Effect<BunHttpClientRequest.BunHttpClientRequest, E, R>,
+      ) =>
         Effect.tap(client.postprocess(request), (response) =>
           Ref.update(ref, (cookies) =>
             Cookies.merge(cookies, response.cookies),

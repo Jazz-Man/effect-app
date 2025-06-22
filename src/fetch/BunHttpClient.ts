@@ -1,10 +1,7 @@
 import type { HttpClientError, HttpClientResponse } from "@effect/platform";
-
-import { Context, type Effect, type FiberRef, type Predicate } from "effect";
-
-import type { RuntimeFiber } from "effect/Fiber";
-
 import type { Cookies } from "@effect/platform/Cookies";
+import { Context, type Effect, type FiberRef, type Predicate } from "effect";
+import type { RuntimeFiber } from "effect/Fiber";
 
 import type { Inspectable } from "effect/Inspectable";
 import type { Layer } from "effect/Layer";

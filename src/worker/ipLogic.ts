@@ -1,7 +1,6 @@
+import { HttpClient } from "@effect/platform";
 import { Effect, Schema } from "effect";
 import { IpInfoResponse } from "./schema.ts";
-
-import { HttpClient } from "@effect/platform";
 import { GeoIpService } from "./service.ts";
 
 const fetchIpInfo = (serviceName: string) =>
