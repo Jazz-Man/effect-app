@@ -1,5 +1,4 @@
 import { Effect, Schema } from "effect";
-
 import geoIp from "geoip-lite";
 import { BunFetchHttpClient, BunHttpClient } from "../fetch/index.ts";
 import { GeoIpNotFoundError, IpIsUndefinedError } from "./error.ts";
@@ -38,7 +37,7 @@ export class IpInfoService extends Effect.Service<IpInfoService>()("IpInfo", {
               const ip = Object.values(data).at(0);
 
               if (!ip) {
-                return yield* Effect.fail(
+                return Effect.fail(
                   new IpIsUndefinedError({
                     response: result,
                     url: response.request.url,
@@ -49,10 +48,10 @@ export class IpInfoService extends Effect.Service<IpInfoService>()("IpInfo", {
               const geoData = geoIp.lookup(ip);
 
               if (geoData === null) {
-                return yield* Effect.fail(new GeoIpNotFoundError());
+                return Effect.fail(new GeoIpNotFoundError());
               }
 
-              return geoData;
+              return Effect.succeed(geoData);
             }),
           ),
         );
