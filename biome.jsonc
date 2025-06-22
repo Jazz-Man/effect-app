@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.0.4/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,32 +7,46 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "ignore": []
+    "includes": ["**", "**/zed/*.json"]
   },
 
   "formatter": {
     "enabled": true,
     "indentStyle": "space"
   },
-  "organizeImports": {
-    "enabled": true
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
   },
   "linter": {
     "enabled": true,
     "rules": {
-      "all": true,
       "style": {
-        "noArguments": "off",
-        "noParameterAssign": "warn"
+        "noParameterAssign": "warn",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error"
       },
       "suspicious": {
         "noExplicitAny": "warn",
-        "noConsole": "off",
-        "noConsoleLog": "off"
+        "noConsole": "off"
       },
       "correctness": {
         "useHookAtTopLevel": "off",
         "noNodejsModules": "off"
+      },
+      "complexity": {
+        "noArguments": "off"
       }
     }
   },
