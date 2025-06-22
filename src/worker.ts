@@ -1,4 +1,4 @@
-import * as os from "node:os";
+import os from "node:os";
 import { Worker } from "@effect/platform";
 import { BunRuntime, BunWorker } from "@effect/platform-bun";
 import { Console, Context, Effect, Layer, Stream } from "effect";
