@@ -1,11 +1,13 @@
 import os from "node:os";
 import { Worker } from "@effect/platform";
 import { BunRuntime, BunWorker } from "@effect/platform-bun";
-import { Console, Context, Effect, Layer, Stream } from "effect";
+import { Array as A, Console, Context, Effect, Layer, Stream } from "effect";
+import type { GetIpDataType } from "./service/IpInfoService";
+import { getProxyUrl } from "./worker/proxy";
 
 class MyWorkerPool extends Context.Tag("@app/MyWorkerPool")<
   MyWorkerPool,
-  Worker.WorkerPool<number, never, number>
+  Worker.WorkerPool<string, GetIpDataType, string>
 >() {}
 
 const PoolLive = Worker.makePoolLayer(MyWorkerPool, {
@@ -13,25 +15,25 @@ const PoolLive = Worker.makePoolLayer(MyWorkerPool, {
 }).pipe(
   Layer.provide(
     BunWorker.layer(
-      () => new globalThis.Worker(`${__dirname}/worker/range.ts`),
+      () =>
+        new globalThis.Worker(
+          new URL(`${__dirname}/worker/range.ts`, import.meta.url).href,
+        ),
     ),
   ),
 );
 
 Effect.gen(function* () {
   const pool = yield* MyWorkerPool;
+
   yield* Effect.all(
-    [
-      pool
-        .execute(5)
-        .pipe(Stream.runForEach((_) => Console.log("worker 1", _))),
-      pool
-        .execute(10)
-        .pipe(Stream.runForEach((_) => Console.log("worker 2", _))),
-      pool
-        .execute(15)
-        .pipe(Stream.runForEach((_) => Console.log("worker 3", _))),
-    ],
+    A.makeBy(5, (n) =>
+      pool.execute(getProxyUrl()).pipe(
+        Stream.runForEach((result) => {
+          return Console.log(`worker ${n}`, result);
+        }),
+      ),
+    ),
     { concurrency: "inherit" },
   );
 }).pipe(Effect.provide(PoolLive), BunRuntime.runMain);
