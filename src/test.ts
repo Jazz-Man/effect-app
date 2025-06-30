@@ -1,27 +1,25 @@
-import { BunRuntime } from "@effect/platform-bun";
-import { Array as A, Console, Effect, Random } from "effect";
-import {
-  IpInfoService,
-  IpServicesNotAvailableError,
-} from "./service/IpInfoService.ts";
+type OptionType = string | number;
 
-import ipServices from "./worker/ipServices.ts";
-import { getProxyUrl } from "./worker/proxy.ts";
+type MyOptionsType = { someConfig: string; fooBar?: OptionType };
 
-const program = Effect.gen(function* () {
-  const ip = yield* IpInfoService;
+class MySomeClassForTesting {
+  private someMyConfigStringOrNumber: OptionType | undefined;
 
-  const ipProviders = yield* Random.shuffle(ipServices);
+  private someOptions: Record<string, OptionType> = {};
 
-  const proxy = getProxyUrl();
+  constructor(private options: MyOptionsType) {
+    this.someMyConfigStringOrNumber = options.fooBar ?? "my-option";
+  }
 
-  const ipData = yield* Effect.firstSuccessOf(
-    A.fromIterable(ipProviders).map((service) => ip.lookup(service, proxy)),
-  ).pipe(Effect.catchAll(() => Effect.fail(new IpServicesNotAvailableError())));
+  public getSomeConfig() {
+    return this.someMyConfigStringOrNumber;
+  }
 
-  return ipData;
-}).pipe(Effect.catchAllCause((cause) => Console.log(cause)));
+  public setSomeOptions(key: string, value: OptionType) {
+    this.someOptions[key] = this.#sanitizeOptionValue(value);
+  }
 
-BunRuntime.runMain(
-  program.pipe(Effect.tap(Effect.log), Effect.provide(IpInfoService.Default)),
-);
+  #sanitizeOptionValue(option: OptionType): string {
+    return `${option}-all-good`;
+  }
+}

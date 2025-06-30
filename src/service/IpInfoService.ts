@@ -80,10 +80,8 @@ export class IpInfoService extends Effect.Service<IpInfoService>()("IpInfo", {
         );
       });
 
-    return { lookup, getIpData } as const;
+    return { getIpData } as const;
   }),
   dependencies: [BunFetchHttpClient.layer],
   accessors: true,
 }) {}
-
-export type IpInfoServiceType = typeof IpInfoService.Identifier.getIpData;
